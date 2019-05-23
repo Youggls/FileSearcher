@@ -1,6 +1,6 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QWidget
-from src.dbConnector.dbconnector import *
+from src.dbConnector.dbConnector import *
 
 a = dbConnector('youggls.top', 'youggls', 'lpylpy328', 'file_system')
 
