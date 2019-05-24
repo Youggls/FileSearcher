@@ -52,7 +52,7 @@ class dbConnector:
 
     def search_file(self, file_name) -> list:
         self.__search_file(file_name)
-        return __fetch_file_info()
+        return self.__fetch_file_info()
 
     # private method here
     def __search_file(self, file_name):
