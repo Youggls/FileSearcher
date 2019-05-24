@@ -26,7 +26,7 @@ from src.dbConnector.dbConnector import *
 #     #的exec_()方法有下划线。因为执行是一个Python关键词。因此，exec_()代替
 #     sys.exit(app.exec_())
 # class Ico(QWidget):
-class Ico(QWidget, dbConnector):
+class Ico(QWidget):
 
     def __init__(self):
         super().__init__()
@@ -40,7 +40,7 @@ class Ico(QWidget, dbConnector):
         self.search = QPushButton('Search', self)
         self.search.setGeometry(115, 150, 70, 30)
         self.search.setToolTip("<b>Click the button to search the file</b>")
-        self.search.clicked.connect(self.showResult)
+        #self.search.clicked.connect(self.showResult)
 
         # self.text = QLineEdit("Enter the file's name here", self)
         # #将默认字符串全选，便于输入文件名
@@ -82,11 +82,11 @@ class Ico(QWidget, dbConnector):
         # self.setLayout(vbox)
         self.show()
 
-    def showResult(self, file_name):
-        showLabel = QLabel("Location")
-        showResult = QListView()
-        resultList = launch.search_file(self, file_name)
-        self.formlayout.addRow(showLabel, showResult)
+    # def showResult(self, file_name):
+    #     showLabel = QLabel("Location")
+    #     showResult = QListView()
+    #     resultList = launch.search_file(self, file_name)
+    #     self.formlayout.addRow(showLabel, showResult)
 
     # def showMessage(self):
     #     #     address = self.text.text()
