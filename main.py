@@ -7,8 +7,6 @@ from PyQt5.QtCore import QCoreApplication
 from random import randint
 from src.dbConnector.dbConnector import *
 
-a = dbConnector('youggls.top', 'youggls', 'lpylpy328', 'file_system')
-
 # #如果写了这句话并将执行的语句放到这个判断语句的后面，那么只有在程序本身被执行的时候才能运行这个判断语句下面的语句。否则程序被作为模块导入的时候就会执行。
 # if __name__ == '__main__':
 #     #每一pyqt5应用程序必须创建一个应用程序对象。sys.argv参数是一个列表，从命令行输入参数。
