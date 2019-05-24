@@ -41,7 +41,7 @@ class dbConnector:
 
     'Destructor, to close the connection and commit all'
     def __del__(self):
-        self.__db_cursor.commit()
+        self.__db_obj.commit()
         self.__db_cursor.close()
         self.__db_obj.close()
 
