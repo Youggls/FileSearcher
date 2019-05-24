@@ -10,12 +10,12 @@ class FileInfo:
     __size = str()
     __modify_time = str()
 
-    def __init__(self, name, base_path, relative_path, isFolder, modify_time, size='0KB'):
+    def __init__(self, name, isFolder, modify_time, hash_id=None, base_path=None, relative_path=None, size='0KB'):
         if type(name) != str:
             raise RuntimeError('The name must be a string type')
-        if type(base_path) != str:
+        if type(base_path) != str and base_path != None:
             raise RuntimeError('The base_path must be a string type')
-        if type(relative_path) != str:
+        if type(relative_path) != str and relative_path != None:
             raise RuntimeError('The relative_path must be a string type')
         if type(isFolder) != bool:
             raise RuntimeError('The isFolder must be a bool type')
@@ -23,6 +23,8 @@ class FileInfo:
             raise RuntimeError('The size must be a string type')
         if type(modify_time) != str:
             raise RuntimeError('The modify time must be a string type')
+        if type(hash_id) != str and hash_id != None:
+            raise RuntimeError('The hash id must be a string type!')
 
         self.__name = name
         self.__relative_path = relative_path
@@ -31,10 +33,13 @@ class FileInfo:
         self.__isFolder = isFolder
         self.__size = size
         self.__modify_time = modify_time
-
-        h = hashlib.md5()
-        h.update(self.__size.encode('utf8'))
-        self.__hash_id = h.hexdigest()
+        
+        if hash_id != None:
+            self.__hash_id = hash_id
+        else:
+            h = hashlib.md5()
+            h.update(self.__size.encode('utf8'))
+            self.__hash_id = h.hexdigest()
 
     def getName(self) -> str:
         return self.__name
