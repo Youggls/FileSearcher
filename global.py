@@ -1,1 +1,1 @@
-SYSTEM_TYPE = "Windows"
+SYSTEM_TYPE = "MacOS"
