@@ -14,3 +14,4 @@ lib64
 build
 .idea
 *.DS_Store
+localtest.py
