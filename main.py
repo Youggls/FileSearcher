@@ -49,7 +49,7 @@ if __name__ == '__main__':
    app = QApplication(sys.argv)
    #图标显示
    path = os.path.join(os.path.dirname(sys.modules[__name__].__file__), 'dva_testIcon.ico')
-   app.setWindowIcon(QIcon(QPixmap(path)))
+   app.setWindowIcon(QIcon(path))
 
    ex = Ico()
    sys.exit(app.exec_())
