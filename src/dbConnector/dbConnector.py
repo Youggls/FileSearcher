@@ -120,7 +120,7 @@ class dbConnector:
 
     'Return the file info object list in the cache'
     def __fetch_file_info(self) -> list:
-        temp = __db_cursor.fetchall()
+        temp = self.__db_cursor.fetchall()
         file_list = list()
         hash_id = str()
         name = str()
@@ -167,7 +167,7 @@ class dbConnector:
 
         try:
             self.__insert_info('file_info', value_list)
-            __db_obj.commit()
-        except Exception as e:
-            __db_obj.rollback()
+            self.__db_obj.commit()
+        except BaseException as e:
+            self.__db_obj.rollback()
             raise Exception(e)
