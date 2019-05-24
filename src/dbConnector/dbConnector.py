@@ -10,6 +10,8 @@ class dbConnector:
     __db_usr_name = str()
     __db_pwd = str()
 
+
+    # public method here
     '''
     The init function
     The frist arg is the database's adderss, 'localhost' or 'example.com' or '0.0.0.0'
@@ -34,6 +36,11 @@ class dbConnector:
         __db_usr_name = db_usr
         __db_pwd = db_pwd
 
+    'Destructor, to close the connection and commit all'
+    def __del__(self):
+        self.__db_cursor.commit()
+        self.__db_obj.close()
+
     def insert_file_obj(self, file_info_obj):
         if type(file_info_obj) != FileInfo:
             raise RuntimeError('The file_info_obj must be a FileInfo Object!')
@@ -42,6 +49,32 @@ class dbConnector:
                                 file_info_obj.getName(), file_info_obj.getModifyTime(),
                                 file_info_obj.getModifyTime(), file_info_obj.getSize(),
                                 file_info_obj.getIsFolder())
+
+    def search_file(self, file_name) -> list:
+        self.__search_file(file_name)
+        return __fetch_file_info()
+
+    # private method here
+    def __search_file(self, file_name):
+        sql = "select * from file_info where name = '{}'".format(file_name)
+        self.__db_cursor.execute(sql)
+
+    'Return the file info object list in the cache'
+    def __fetch_file_info(self) -> list:
+        temp = __db_cursor.fetchall()
+        file_list = list()
+        hash_id = str()
+        name = str()
+        modify_time = str()
+        size = str()
+        isFolder = bool()
+        pre_folder_id = str()
+
+        for line in temp:
+            hash_id, name, modify_time, size, isFolder, pre_folder_id = line
+            file_list.append(FileInfo(name, isFolder, modify_time, hash_id, size=size))
+
+        return file_list
 
     'insert method, private, please make sure that the table is same with value_list'
     def __insert_info(self, target_table, value_list):
@@ -79,8 +112,3 @@ class dbConnector:
         except BaseException as e:
             __db_obj.rollback()
             raise Exception(e)
-
-
-    'return the file info list'
-    def fetch_file_info(self):
-        temp_data = __db_cursor.fetchcall();
