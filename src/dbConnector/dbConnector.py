@@ -1,15 +1,12 @@
 import pymysql
 import hashlib
+import time
+import os
 from src.dbConnector.FileInfo import FileInfo
+from global_var import SYSTEM_TYPE
 
 class dbConnector:
     'The class is used to establish connection between the database and the appliction'
-    __db_obj = object()
-    __db_cursor = object()
-    __host_name = str()
-    __db_usr_name = str()
-    __db_pwd = str()
-
 
     # public method here
     '''
@@ -30,31 +27,146 @@ class dbConnector:
         if type(default_schema) != str:
             raise RuntimeError('The defalut_schema must be a string type!')
 
-        __db_obj = pymysql.connect(host_name, db_usr, db_pwd, default_schema)
-        __db_cursor = __db_obj.cursor()
-        __host_name = host_name
-        __db_usr_name = db_usr
-        __db_pwd = db_pwd
+        self.__db_obj = pymysql.connect(host_name, db_usr, db_pwd, default_schema)
+        self.__db_cursor = self.__db_obj.cursor()
+        self.__host_name = host_name
+        self.__db_usr_name = db_usr
+        self.__db_pwd = db_pwd
+
+    def walk_path(self):
+        if SYSTEM_TYPE == "Windows":
+            self.__windows_walk_path()
+        elif SYSTEM_TYPE == "MacOS":
+            self.__macOS_walk_path()
 
     'Destructor, to close the connection and commit all'
     def __del__(self):
         self.__db_cursor.commit()
+        self.__db_cursor.close()
         self.__db_obj.close()
 
-    def insert_file_obj(self, file_info_obj):
+    def insert_file_obj(self, file_info_obj, pre_folder_id):
         if type(file_info_obj) != FileInfo:
             raise RuntimeError('The file_info_obj must be a FileInfo Object!')
 
-        self.__insert_single_file(file_info_obj.getBasePath(), file_info_obj.getRelativePaht(),
-                                file_info_obj.getName(), file_info_obj.getModifyTime(),
+        self.__insert_single_file(file_info_obj.getHash(), file_info_obj.getName(),
                                 file_info_obj.getModifyTime(), file_info_obj.getSize(),
-                                file_info_obj.getIsFolder())
+                                pre_folder_id)
 
     def search_file(self, file_name) -> list:
         self.__search_file(file_name)
         return self.__fetch_file_info()
 
+    def setFileFullPath(self, file):
+        if type(file) != FileInfo:
+            raise RuntimeError('The file must be a FileInfo type')
+
+        sql = "call getFullPath('{}')".format(file.getHash)
+        self.__db_cursor.execute(sql)
+        temp = self.__db_cursor.fetchall()
+
+        name_list = list()
+        for line in temp:
+            t = line
+            name_list.append(t)
+
+        fullPath = ''
+        for name in name_list:
+            fullPath += name + '/'
+
+        file.setFullPath(fullPath)
+
+
     # private method here
+    def __windows_walk_path(self):
+        # To search how many disk the system has
+        disk_list = []
+        char_list = [chr(i) for i in range(65, 91)]
+        for char in char_list:
+            if os.path.isdir(char + ':\\'):
+                disk_list.append(char)
+        
+        for disk in disk_list:
+            g = os.walk(disk + ':\\')
+            #Insert the root to the database
+            h = hashlib.md5()
+            h.update(str(disk + ':\\').encode('utf8'))
+            hash_id = h.hexdigest()
+            f = FileInfo(disk, True, 'null', hash_id, size='0KB')
+            self.insert_file_obj(f, hash_id)
+            for path, dir_list, file_list in g:
+                for dir_name in dir_list:
+                    full_path = os.path.join(path, dir_name)
+                    statinfo = os.stat(full_path)
+                    local = time.localtime(statinfo.st_ctime)
+                    modify_time = str(local.tm_year) + '-' + str(local.tm_mon) + '-' + str(local.tm_mday) + ' ' + str(local.tm_hour) + ':' + str(local.tm_min) + ':' + str(local.tm_sec)
+
+                    size = str(statinfo.st_size / 1024) + 'KB'
+                    h = hashlib.md5()
+                    h.update(full_path.encode('utf8'))
+                    hash_id = h.hexdigest()
+                    h = hashlib.md5()
+                    h.update(os.path.join(path).encode('utf8'))
+                    pre_folder_id = h.hexdigest()
+                    f = FileInfo(dir_name, True, modify_time, hash_id, size=size)
+                    self.insert_file_obj(f, pre_folder_id)
+
+                for file_name in file_list:
+                    full_path = os.path.join(path, file_name)
+                    statinfo = os.stat(full_path)
+                    local = time.localtime(statinfo.st_ctime)
+                    modify_time = str(local.tm_year) + '-' + str(local.tm_mon) + '-' + str(local.tm_mday) + ' ' + str(local.tm_hour) + ':' + str(local.tm_min) + ':' + str(local.tm_sec)
+
+                    size = str(statinfo.st_size / 1024) + 'KB'
+                    h = hashlib.md5()
+                    h.update(full_path.encode('utf8'))
+                    hash_id = h.hexdigest()
+                    h = hashlib.md5()
+                    h.update(os.path.join(path).encode('utf8'))
+                    pre_folder_id = h.hexdigest()
+                    f = FileInfo(file_name, False, modify_time, hash_id, size=size)
+                    self.insert_file_obj(f, pre_folder_id)
+
+    def __macOS_walk_path(self):
+        g = os.walk('/')
+        h = hashlib.md5()
+        h.update('/'.encode('utf8'))
+        hash_id = h.hexdigest()
+        f = FileInfo('/', True, 'null', hash_id, size='0KB')
+        self.insert_file_obj(f, hash_id)
+        for path, dir_list, file_list in g:
+            for dir_name in dir_list:
+                full_path = os.path.join(path, dir_name)
+                statinfo = os.stat(full_path)
+                local = time.localtime(statinfo.st_ctime)
+                modify_time = str(local.tm_year) + '-' + str(local.tm_mon) + '-' + str(local.tm_mday) + ' ' + str(local.tm_hour) + ':' + str(local.tm_min) + ':' + str(local.tm_sec)
+
+                size = str(statinfo.st_size / 1024) + 'KB'
+                h = hashlib.md5()
+                h.update(full_path.encode('utf8'))
+                hash_id = h.hexdigest()
+                h = hashlib.md5()
+                h.update(os.path.join(path).encode('utf8'))
+                pre_folder_id = h.hexdigest()
+                f = FileInfo(dir_name, True, modify_time, hash_id, size=size)
+                self.insert_file_obj(f, pre_folder_id)
+
+            for file_name in file_list:
+                full_path = os.path.join(path, file_name)
+                statinfo = os.stat(full_path)
+                local = time.localtime(statinfo.st_ctime)
+                modify_time = str(local.tm_year) + '-' + str(local.tm_mon) + '-' + str(local.tm_mday) + ' ' + str(local.tm_hour) + ':' + str(local.tm_min) + ':' + str(local.tm_sec)
+
+                size = str(statinfo.st_size / 1024) + 'KB'
+                h = hashlib.md5()
+                h.update(full_path.encode('utf8'))
+                hash_id = h.hexdigest()
+                h = hashlib.md5()
+                h.update(os.path.join(path).encode('utf8'))
+                pre_folder_id = h.hexdigest()
+                f = FileInfo(file_name, False, modify_time, hash_id, size=size)
+                self.insert_file_obj(f, pre_folder_id)
+
     def __search_file(self, file_name):
         sql = "select * from file_info where name = '{}'".format(file_name)
         self.__db_cursor.execute(sql)
@@ -90,25 +202,20 @@ class dbConnector:
             if index != len(value_list) - 1:
                 sql += ','
         sql += ')'
-        self.__db_curosr.execute(sql)
+        self.__db_cursor.execute(sql)
 
     'insert single_file into database, info includes the name, modify_time, size, isFolder'
-    def __insert_single_file(self, base_dir, relative_path, name, modify_time, size, isFolder=True):
-        if type(base_dir) != str:
-            raise RuntimeError('The base_dir must be a string type!')
-        if type(relative_path) != str:
-            raise RuntimeError('The relative_path must be a string type!')
-        
-        current_path = str()
-        current_path = base_dir + relative_path
-        h = hashlib.md5()
-        h.update(current_path.encode('utf8'))
-        current_path_id = str(h.hexdigest())
-        value_list = [current_path_id, name, str(modify_time), size, str(isFolder)]
+    def __insert_single_file(self, hash_id, name, modify_time, size, pre_folder_id, isFolder=True):
+        if type(hash_id) != str:
+            raise RuntimeError('The hash_id must be a string type!')
+        if type(pre_folder_id) != str:
+            raise RuntimeError('The pre_folder_id must be a string type!')
+
+        value_list = ["'{}'".format(hash_id), "'{}'".format(name), "'{}'".format(str(modify_time)), "'{}'".format(size), str(isFolder), "'{}'".format(pre_folder_id)]
 
         try:
             self.__insert_info('file_info', value_list)
             self.__db_obj.commit()
-        except BaseException as e:
+        except Exception as e:
             self.__db_obj.rollback()
             raise Exception(e)

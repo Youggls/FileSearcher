@@ -1,4 +1,5 @@
 import hashlib
+from global_var import SYSTEM_TYPE
 
 class FileInfo:
     __name = str()
@@ -29,23 +30,29 @@ class FileInfo:
         self.__name = name
         self.__relative_path = relative_path
         self.__base_path = base_path
-        self.__path = relative_path + base_path
         self.__isFolder = isFolder
         self.__size = size
         self.__modify_time = modify_time
+
+        if base_path != None and relative_path != None:
+            self.__path = base_path + relative_path;
         
         if hash_id != None:
             self.__hash_id = hash_id
-        else:
+        elif self.__path != None:
             h = hashlib.md5()
-            h.update(self.__size.encode('utf8'))
+            h.update(self.__path.encode('utf8'))
             self.__hash_id = h.hexdigest()
 
     def getName(self) -> str:
         return self.__name
 
     def getPath(self) -> str:
-        return self.__path
+        if self.__path != None:
+            if SYSTEM_TYPE == 'Windows':
+                return self.__path.replace('/', '\\')
+        else:
+            raise RuntimeError('The path not set!')
 
     def getIsFolder(self) -> bool:
         return self.__isFolder
@@ -63,4 +70,10 @@ class FileInfo:
         return self.__base_path
 
     def getModifyTime(self) -> str:
-        return self.__modefy_time
+        return self.__modify_time
+
+    def setFullPath(self, fullPath):
+        if type(fullPath) != str:
+            raise RuntimeError('The fullpath must be str type!')
+
+        self.__path = fullPath
