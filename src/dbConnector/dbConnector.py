@@ -7,11 +7,6 @@ from global_var import SYSTEM_TYPE
 
 class dbConnector:
     'The class is used to establish connection between the database and the appliction'
-    # __db_obj = pymysql.connect()
-    # __db_cursor = pymysql.connect().cursor()
-    # __host_name = str()
-    # __db_usr_name = str()
-    # __db_pwd = str()
 
     # public method here
     '''
@@ -129,7 +124,7 @@ class dbConnector:
                     h = hashlib.md5()
                     h.update(os.path.join(path).encode('utf8'))
                     pre_folder_id = h.hexdigest()
-                    f = FileInfo(file_name, True, modify_time, hash_id, size=size)
+                    f = FileInfo(file_name, False, modify_time, hash_id, size=size)
                     self.insert_file_obj(f, pre_folder_id)
 
     def __macOS_walk_path(self):
@@ -169,7 +164,7 @@ class dbConnector:
                 h = hashlib.md5()
                 h.update(os.path.join(path).encode('utf8'))
                 pre_folder_id = h.hexdigest()
-                f = FileInfo(file_name, True, modify_time, hash_id, size=size)
+                f = FileInfo(file_name, False, modify_time, hash_id, size=size)
                 self.insert_file_obj(f, pre_folder_id)
 
     def __search_file(self, file_name):
