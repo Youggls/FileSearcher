@@ -1,8 +1,10 @@
 import sys
 import os
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton
-from PyQt5.QtGui import QIcon, QPixmap
+from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QMessageBox, QLineEdit, QHBoxLayout, QVBoxLayout, \
+    QFormLayout, QLabel, QTextEdit
+from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QCoreApplication
+from random import randint
 from src.dbConnector.dbConnector import *
 
 a = dbConnector('youggls.top', 'youggls', 'lpylpy328', 'file_system')
@@ -28,28 +30,86 @@ a = dbConnector('youggls.top', 'youggls', 'lpylpy328', 'file_system')
 
 class Ico(QWidget):
 
-   def __init__(self):
-       super().__init__()
-       self.initUI()
+    def __init__(self):
+        super().__init__()
+        self.initUI()
 
-   def initUI(self):
+    def initUI(self):
 
-       self.setGeometry(300, 300, 300, 220)
-       self.setWindowTitle('FileSearcher')
+        self.setGeometry(300, 300, 300, 220)
+        self.setWindowTitle('FileSearcher')
 
-       qbtn = QPushButton('exit', self)
-       qbtn.clicked.connect(QCoreApplication.instance().quit)
-       qbtn.resize(70,30)
-       qbtn.move(50, 50)
+        self.search = QPushButton('Search', self)
+        self.search.setGeometry(115, 150, 70, 30)
+        self.search.setToolTip("<b>Click the button to search the file</b>")
+        self.search.clicked.connect(self.showMessage)
 
-       self.show()
+        # self.text = QLineEdit("Enter the file's name here", self)
+        # #将默认字符串全选，便于输入文件名
+        # self.text.selectAll()
+        # #让焦点置于文本栏
+        # self.text.setFocus()
+        # self.text.setGeometry(80, 50, 150, 30)
+
+        formlayout = QFormLayout()
+        searchLabel = QLabel("File Name")
+        searchLineEdit = QLineEdit("")
+        searchLineEdit.setFocus()
+        searchLineEdit.setPlaceholderText("Enter the file's name here")
+        searchLineEdit.setClearButtonEnabled(True)
+
+        showLabel = QLabel("简介")
+        showLineEdit = QTextEdit("")
+
+        formlayout.addRow(searchLabel, searchLineEdit)
+        formlayout.addRow(showLabel, showLineEdit)
+        self.setLayout(formlayout)
+
+        # # 水平布局，添加一个拉伸因子和按钮
+        # hbox_search = QHBoxLayout()
+        # # addStretch函数的作用是在布局器中增加一个伸缩量，里面的参数表示QSpacerItem的个数，默认值为零，会将你放在layout中的空间压缩成默认的大小。
+        # hbox_search.addStretch(1)
+        # hbox_search.addWidget(self.search)
+        # hbox_search.addStretch(3)  # 增加伸缩量
+        #
+        # hbox_click = QHBoxLayout()
+        # hbox_click.addStretch(1)
+        # hbox_click.addWidget(self.text)
+        # hbox_click.addStretch(3)  # 增加伸缩量
+        #
+        # # 水平布局放置在垂直布局中。垂直框中的拉伸因子将按钮的水平框推到窗口的底部。
+        # vbox = QVBoxLayout()
+        # vbox.addStretch(1)
+        # vbox.addLayout(hbox_click)
+        # vbox.addStretch(6)  # 增加伸缩量
+        # vbox.addLayout(hbox_search)
+        #
+        # # 设置窗口的主要布局
+        # self.setLayout(vbox)
+        self.show()
+
+    def showMessage(self):
+        address = self.text.text()
+        #about弹出一个对话框
+        QMessageBox.about(self, 'result', address)
+        self.text.setFocus()
+        # self.text.clear()
+
+    def closeEvent(self, event):
+        #QMessageBox.question, critical, warining, information 代表四个不同的图标
+        reply = QMessageBox.question(self, '确认', '确认退出吗', QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            event.accept()
+        else:
+            event.ignore()
+
 
 if __name__ == '__main__':
 
-   app = QApplication(sys.argv)
-   #图标显示
-   path = os.path.join(os.path.dirname(sys.modules[__name__].__file__), 'dva_testIcon.ico')
-   app.setWindowIcon(QIcon(path))
+    app = QApplication(sys.argv)
+    #图标显示
+    path = os.path.join(os.path.dirname(sys.modules[__name__].__file__), 'dva_testIcon.ico')
+    app.setWindowIcon(QIcon(path))
 
-   ex = Ico()
-   sys.exit(app.exec_())
+    ex = Ico()
+    sys.exit(app.exec_())
