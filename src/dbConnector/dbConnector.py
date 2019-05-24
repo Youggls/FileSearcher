@@ -50,7 +50,7 @@ class dbConnector:
                                 file_info_obj.getModifyTime(), file_info_obj.getSize(),
                                 file_info_obj.getIsFolder())
 
-    def search_file(self, file_name) -> list(FileInfo):
+    def search_file(self, file_name) -> list:
         self.__search_file(file_name)
         return __fetch_file_info()
 
@@ -60,7 +60,7 @@ class dbConnector:
         self.__db_cursor.execute(sql)
 
     'Return the file info object list in the cache'
-    def __fetch_file_info(self) -> list(FileInfo):
+    def __fetch_file_info(self) -> list:
         temp = __db_cursor.fetchall()
         file_list = list()
         hash_id = str()
