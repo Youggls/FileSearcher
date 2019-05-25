@@ -3,7 +3,7 @@ import os
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QMessageBox, QLineEdit, QHBoxLayout, QVBoxLayout, \
     QFormLayout, QLabel, QTextEdit, QListView
 from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import QCoreApplication
+from PyQt5.QtCore import QCoreApplication, QStringListModel
 from random import randint
 from src.dbConnector.dbConnector import *
 
@@ -34,13 +34,16 @@ class Ico(QWidget):
 
     def initUI(self):
 
+        self.launch = dbConnector('127.0.0.1', 'Raymond777', 'Ytk981213', 'test')
+
         self.setGeometry(300, 300, 300, 220)
         self.setWindowTitle('FileSearcher')
 
         self.search = QPushButton('Search', self)
-        self.search.setGeometry(115, 150, 70, 30)
+        #self.search.setGeometry(115, 150, 70, 30)
         self.search.setToolTip("<b>Click the button to search the file</b>")
-        #self.search.clicked.connect(self.showResult)
+
+
 
         # self.text = QLineEdit("Enter the file's name here", self)
         # #将默认字符串全选，便于输入文件名
@@ -50,43 +53,85 @@ class Ico(QWidget):
         # self.text.setGeometry(80, 50, 150, 30)
 
         self.formlayout = QFormLayout()
-        searchLabel = QLabel("File Name")
-        searchLineEdit = QLineEdit("")
-        searchLineEdit.setFocus()
-        searchLineEdit.setPlaceholderText("Enter the file's name here")
-        searchLineEdit.setClearButtonEnabled(True)
+        self.searchLabel = QLabel("File Name")
+        self.searchLineEdit = QLineEdit(self)
+        self.searchLineEdit.setFocus()
+        self.searchLineEdit.setPlaceholderText("Enter the file's name here")
+        self.searchLineEdit.setClearButtonEnabled(True)
+        self.search.clicked.connect(lambda:self.showResult())
 
-        self.formlayout.addRow(searchLabel, searchLineEdit)
-        self.setLayout(self.formlayout)
-
-        # # 水平布局，添加一个拉伸因子和按钮
-        # hbox_search = QHBoxLayout()
-        # # addStretch函数的作用是在布局器中增加一个伸缩量，里面的参数表示QSpacerItem的个数，默认值为零，会将你放在layout中的空间压缩成默认的大小。
-        # hbox_search.addStretch(1)
-        # hbox_search.addWidget(self.search)
-        # hbox_search.addStretch(3)  # 增加伸缩量
+        # # # 水平布局，添加一个拉伸因子和按钮
+        # # hbox_search = QHBoxLayout()
+        # # # addStretch函数的作用是在布局器中增加一个伸缩量，里面的参数表示QSpacerItem的个数，默认值为零，会将你放在layout中的空间压缩成默认的大小。
+        # # hbox_search.addStretch(1)
+        # # hbox_search.addWidget(self.searchLabel)
+        # # hbox_search.addStretch(1)
+        # # hbox_search.addWidget(self.searchLineEdit)
+        # # hbox_search.addStretch(1)
+        # # hbox_search.addWidget(self.search)
+        # # hbox_search.addStretch(3)  # 增加伸缩量
+        # # self.setLayout(hbox_search)
+        # # if(self.searchLineEdit.text() != ""):
+        # self.search.clicked.connect(self.showResult(self, self.searchLineEdit.text()))
+        # self.formlayout.addRow(searchLabel, self.searchLineEdit)
         #
-        # hbox_click = QHBoxLayout()
+        # self.setLayout(self.formlayout)
+
+        # 水平布局，添加一个拉伸因子和按钮
+        hbox_search = QHBoxLayout()
+        # addStretch函数的作用是在布局器中增加一个伸缩量，里面的参数表示QSpacerItem的个数，默认值为零，会将你放在layout中的空间压缩成默认的大小。
+        hbox_search.addStretch(1)
+        hbox_search.addWidget(self.searchLabel)
+        hbox_search.addStretch(1)
+        hbox_search.addWidget(self.searchLineEdit)
+        hbox_search.addStretch(1)
+        hbox_search.addWidget(self.search)
+        hbox_search.addStretch(3)  # 增加伸缩量
+
+
+        self.result = QVBoxLayout()
+        self.result.addStretch(1)
+        self.result.addLayout(hbox_search)
+        self.result.addStretch(6)  # 增加伸缩量
+        # self.result.addWidget(self.resultView)
+        self.setLayout(self.result)
+        hbox_click = QHBoxLayout()
         # hbox_click.addStretch(1)
-        # hbox_click.addWidget(self.text)
+        # hbox_click.addWidget(self.resultLabel)
+        # hbox_click.addStretch(1)
+        # hbox_click.addLayout(result)
         # hbox_click.addStretch(3)  # 增加伸缩量
-        #
-        # # 水平布局放置在垂直布局中。垂直框中的拉伸因子将按钮的水平框推到窗口的底部。
+
+        #水平布局放置在垂直布局中。垂直框中的拉伸因子将按钮的水平框推到窗口的底部。
         # vbox = QVBoxLayout()
         # vbox.addStretch(1)
-        # vbox.addLayout(hbox_click)
-        # vbox.addStretch(6)  # 增加伸缩量
         # vbox.addLayout(hbox_search)
-        #
-        # # 设置窗口的主要布局
-        # self.setLayout(vbox)
+        # vbox.addStretch(6)  # 增加伸缩量
+        # vbox.addLayout(hbox_click)
+
+        #设置窗口的主要布局
+        self.setLayout(self.result)
         self.show()
 
-    # def showResult(self, file_name):
-    #     showLabel = QLabel("Location")
-    #     showResult = QListView()
-    #     resultList = launch.search_file(self, file_name)
-    #     self.formlayout.addRow(showLabel, showResult)
+    def showResult(self):
+        self.resultLabel = QLabel("Result")
+        self.resultView = QListView()  # 创建ListView
+        self.resultModel = QStringListModel()  # 创建ListModel
+        self.resultList = ["test1", "test2", "test3", "test4"]
+        #self.resultList = self.launch.search_file("factory")  # 调用search_file返回result（List类型）
+        self.resultModel.setStringList(self.resultList)  # 将数据设置到Model
+        self.resultView.setModel(self.resultModel)  # 绑定View和Model
+        self.result.addWidget(self.resultView)
+        # return self.resultView
+        # self.resultView.clicked.connect(self.clickedlist)
+        # layout = QVBoxLayout()
+        # layout.addWidget(self.resultView)  # 将list view添加到layout
+        # self.setLayout(layout)  # 将lay 添加到窗口
+        # self.show()
+
+    # def clickedlist(self, qModelIndex):
+    #     QMessageBox.information(self, self.resultList[qModelIndex.row()])
+    #     print(str(qModelIndex.row()))
 
     # def showMessage(self):
     #     #     address = self.text.text()
@@ -105,11 +150,18 @@ class Ico(QWidget):
 
 
 if __name__ == '__main__':
-    launch = dbConnector('youggls.top', 'youggls', 'lpylpy328', 'file_system')
+    # print("test1")
+    # launch = dbConnector('127.0.0.1', 'Raymond777', 'Ytk981213', 'test')
+    # launch.walk_path()
+    #print("test2")
     app = QApplication(sys.argv)
     #图标显示
     path = os.path.join(os.path.dirname(sys.modules[__name__].__file__), 'dva_testIcon.ico')
     app.setWindowIcon(QIcon(path))
-    #launch.walkpath();
+    # l = launch.search_file("u")
+    # for i in l:
+    #     print(i, end=', ')  # 以逗号为分隔符
+    # print("test3")
+    #launch.walkpath()
     ex = Ico()
     sys.exit(app.exec_())
