@@ -51,6 +51,8 @@ class FileInfo:
         if self.__path != None:
             if SYSTEM_TYPE == 'Windows':
                 return self.__path.replace('/', '\\')
+            else:
+                return self.__path
         else:
             raise RuntimeError('The path not set!')
 
