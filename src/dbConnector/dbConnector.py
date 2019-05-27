@@ -32,6 +32,7 @@ class dbConnector:
         self.__host_name = host_name
         self.__db_usr_name = db_usr
         self.__db_pwd = db_pwd
+        #self.__init_database()
 
     def walk_path(self):
         if SYSTEM_TYPE == "Windows":
@@ -61,13 +62,13 @@ class dbConnector:
         if type(file) != FileInfo:
             raise RuntimeError('The file must be a FileInfo type')
 
-        sql = "call getFullPath('{}')".format(file.getHash)
+        sql = "call getFullPath('{}')".format(file.getHash())
         self.__db_cursor.execute(sql)
         temp = self.__db_cursor.fetchall()
 
         name_list = list()
         for line in temp:
-            t = line
+            t = line[0]
             name_list.append(t)
 
         fullPath = ''
@@ -168,7 +169,7 @@ class dbConnector:
                 self.insert_file_obj(f, pre_folder_id)
 
     def __search_file(self, file_name):
-        sql = "select * from file_info where name = '{}'".format(file_name)
+        sql = "select * from file_info where name like '%{}%'".format(file_name)
         self.__db_cursor.execute(sql)
 
     'Return the file info object list in the cache'
@@ -219,3 +220,8 @@ class dbConnector:
         except Exception as e:
             self.__db_obj.rollback()
             raise Exception(e)
+
+    def __init_database(self):
+        self.__db_cursor.execute('drop table if exists file_info')
+        create_database = "create table file_info ( hash_id varchar(100) primary key, name varchar(100) not null, modify_time varchar(30) not null, size varchar(20), isFolder bool, pre_folder_id varchar(100), constraint foreign key (pre_folder_id) references file_info(hash_id));"
+        self.__db_cursor.execute(create_database)

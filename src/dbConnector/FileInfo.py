@@ -2,14 +2,6 @@ import hashlib
 from global_var import SYSTEM_TYPE
 
 class FileInfo:
-    __name = str()
-    __base_path = str()
-    __relative_path = str()
-    __path = str()
-    __hash_id = str()
-    __isFolder = bool()
-    __size = str()
-    __modify_time = str()
 
     def __init__(self, name, isFolder, modify_time, hash_id=None, base_path=None, relative_path=None, size='0KB'):
         if type(name) != str:
@@ -18,8 +10,8 @@ class FileInfo:
             raise RuntimeError('The base_path must be a string type')
         if type(relative_path) != str and relative_path != None:
             raise RuntimeError('The relative_path must be a string type')
-        if type(isFolder) != bool:
-            raise RuntimeError('The isFolder must be a bool type')
+        if type(isFolder) != bool and type(isFolder) != int:
+            raise RuntimeError('The isFolder must be a bool or int type')
         if type(size) != str:
             raise RuntimeError('The size must be a string type')
         if type(modify_time) != str:
@@ -30,7 +22,7 @@ class FileInfo:
         self.__name = name
         self.__relative_path = relative_path
         self.__base_path = base_path
-        self.__isFolder = isFolder
+        self.__isFolder = bool(isFolder)
         self.__size = size
         self.__modify_time = modify_time
 
