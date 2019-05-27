@@ -229,5 +229,5 @@ class dbConnector:
 
     def __init_database(self):
         self.__db_cursor.execute('drop table if exists file_info')
-        create_database = "create table file_info ( hash_id varchar(100) primary key, name varchar(100) not null, modify_time varchar(30) not null, size varchar(20), isFolder bool, pre_folder_id varchar(100), constraint foreign key (pre_folder_id) references file_info(hash_id));"
+        create_database = "create table file_info ( hash_id varchar(100) primary key, name varchar(300) not null, modify_time varchar(30) not null, size varchar(20), isFolder bool, pre_folder_id varchar(100), constraint foreign key (pre_folder_id) references file_info(hash_id));"
         self.__db_cursor.execute(create_database)

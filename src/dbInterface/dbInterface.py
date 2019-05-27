@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QWidget, QPushButton, QMessageBox, QLineEdit, QHBoxLayout, QVBoxLayout, \
     QFormLayout, QLabel, QTableView, QHeaderView, QAbstractItemView, QToolTip
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QCursor
-from PyQt5 import QtCore
+from PyQt5 import QtCore, sip
 
 from src.dbConnector.dbConnector import *
 
