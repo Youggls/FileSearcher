@@ -138,35 +138,41 @@ class dbConnector:
         for path, dir_list, file_list in g:
             for dir_name in dir_list:
                 full_path = os.path.join(path, dir_name)
-                statinfo = os.stat(full_path)
-                local = time.localtime(statinfo.st_ctime)
-                modify_time = str(local.tm_year) + '-' + str(local.tm_mon) + '-' + str(local.tm_mday) + ' ' + str(local.tm_hour) + ':' + str(local.tm_min) + ':' + str(local.tm_sec)
+                try:
+                    statinfo = os.stat(full_path)
+                    local = time.localtime(statinfo.st_ctime)
+                    modify_time = str(local.tm_year) + '-' + str(local.tm_mon) + '-' + str(local.tm_mday) + ' ' + str(local.tm_hour) + ':' + str(local.tm_min) + ':' + str(local.tm_sec)
 
-                size = str(statinfo.st_size / 1024) + 'KB'
-                h = hashlib.md5()
-                h.update(full_path.encode('utf8'))
-                hash_id = h.hexdigest()
-                h = hashlib.md5()
-                h.update(os.path.join(path).encode('utf8'))
-                pre_folder_id = h.hexdigest()
-                f = FileInfo(dir_name, True, modify_time, hash_id, size=size)
-                self.insert_file_obj(f, pre_folder_id)
+                    size = str(statinfo.st_size / 1024) + 'KB'
+                    h = hashlib.md5()
+                    h.update(full_path.encode('utf8'))
+                    hash_id = h.hexdigest()
+                    h = hashlib.md5()
+                    h.update(os.path.join(path).encode('utf8'))
+                    pre_folder_id = h.hexdigest()
+                    f = FileInfo(dir_name, True, modify_time, hash_id, size=size)
+                    self.insert_file_obj(f, pre_folder_id)
+                except OSError:
+                    pass
 
             for file_name in file_list:
                 full_path = os.path.join(path, file_name)
-                statinfo = os.stat(full_path)
-                local = time.localtime(statinfo.st_ctime)
-                modify_time = str(local.tm_year) + '-' + str(local.tm_mon) + '-' + str(local.tm_mday) + ' ' + str(local.tm_hour) + ':' + str(local.tm_min) + ':' + str(local.tm_sec)
+                try:
+                    statinfo = os.stat(full_path)
+                    local = time.localtime(statinfo.st_ctime)
+                    modify_time = str(local.tm_year) + '-' + str(local.tm_mon) + '-' + str(local.tm_mday) + ' ' + str(local.tm_hour) + ':' + str(local.tm_min) + ':' + str(local.tm_sec)
 
-                size = str(statinfo.st_size / 1024) + 'KB'
-                h = hashlib.md5()
-                h.update(full_path.encode('utf8'))
-                hash_id = h.hexdigest()
-                h = hashlib.md5()
-                h.update(os.path.join(path).encode('utf8'))
-                pre_folder_id = h.hexdigest()
-                f = FileInfo(file_name, False, modify_time, hash_id, size=size)
-                self.insert_file_obj(f, pre_folder_id)
+                    size = str(statinfo.st_size / 1024) + 'KB'
+                    h = hashlib.md5()
+                    h.update(full_path.encode('utf8'))
+                    hash_id = h.hexdigest()
+                    h = hashlib.md5()
+                    h.update(os.path.join(path).encode('utf8'))
+                    pre_folder_id = h.hexdigest()
+                    f = FileInfo(file_name, False, modify_time, hash_id, size=size)
+                    self.insert_file_obj(f, pre_folder_id)
+                except OSError:
+                    pass
 
     def __search_file(self, file_name):
         sql = "select * from file_info where name like '%{}%'".format(file_name)
