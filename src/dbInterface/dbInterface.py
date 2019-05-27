@@ -58,6 +58,7 @@ class Ico(QWidget):
         self.searchLineEdit.setPlaceholderText(" Enter the file's name here.")
         self.searchLineEdit.setClearButtonEnabled(True)
         self.searchLineEdit.setMinimumSize(180, 25)
+        self.searchLineEdit.returnPressed.connect(lambda:self.showResult(self.searchLineEdit.text()))
         self.count = -1
 
         self.search.clicked.connect(lambda:self.showResult(self.searchLineEdit.text()))
