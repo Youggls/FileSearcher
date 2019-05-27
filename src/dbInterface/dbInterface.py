@@ -1,6 +1,8 @@
+from PyQt5 import sip
+from PyQt5.QtCore import QPoint
 from PyQt5.QtWidgets import QWidget, QPushButton, QMessageBox, QLineEdit, QHBoxLayout, QVBoxLayout, \
-    QFormLayout, QLabel, QTableView, QHeaderView
-from PyQt5.QtGui import QStandardItemModel, QStandardItem
+    QFormLayout, QLabel, QTableView, QHeaderView, QAbstractItemView, QToolTip
+from PyQt5.QtGui import QStandardItemModel, QStandardItem, QCursor
 from src.dbConnector.dbConnector import *
 
 # #如果写了这句话并将执行的语句放到这个判断语句的后面，那么只有在程序本身被执行的时候才能运行这个判断语句下面的语句。否则程序被作为模块导入的时候就会执行。
@@ -53,6 +55,8 @@ class Ico(QWidget):
         self.searchLineEdit.setPlaceholderText("Enter the file's name here")
         self.searchLineEdit.setClearButtonEnabled(True)
         self.searchLineEdit.setMinimumSize(170, 25)
+        self.count = -1
+
         self.search.clicked.connect(lambda:self.showResult(self.searchLineEdit.text()))
 
         # # # 水平布局，添加一个拉伸因子和按钮
@@ -109,7 +113,12 @@ class Ico(QWidget):
         self.show()
 
     def showResult(self, file_name):
-        self.resultLabel = QLabel("Result")
+        if file_name !="":
+            self.count += 1
+            if self.count != 0:
+                self.result.removeWidget(self.tableView)
+                sip.delete(self.tableView)
+            self.resultLabel = QLabel("Result")
         # self.resultView = QListView()  # 创建ListView
         # self.resultModel = QStringListModel()  # 创建ListModel
         # temp_list = self.launch.search_file(file_name)
@@ -122,59 +131,66 @@ class Ico(QWidget):
         # self.resultView.setModel(self.resultModel)  # 绑定View和Model
         # self.result.addWidget(self.resultView)
 
-        self.num = len(self.launch.search_file(file_name))
+            self.num = len(self.launch.search_file(file_name))
         # 设置数据层次结构，num行4列
-        self.model = QStandardItemModel(self.num, 4)
+            self.model = QStandardItemModel(self.num, 4)
         # 设置水平方向四个头标签文本内容
-        self.model.setHorizontalHeaderLabels(['Name', 'Path', 'Size', 'ModifyTime'])
+            self.model.setHorizontalHeaderLabels(['Name', 'Path', 'Size', 'ModifyTime'])
 
         # self.tableWidget.setColumnCount(4)
         # self.tableWidget.setRowCount(self.num)
-        temp_list = self.launch.search_file(file_name)
+            temp_list = self.launch.search_file(file_name)
 
-        for i in range(self.num):
-            temp_info = temp_list[i]
-            self.launch.setFileFullPath(temp_info)
+            for i in range(self.num):
+                temp_info = temp_list[i]
+                self.launch.setFileFullPath(temp_info)
             #value = temp_info.getName()
             #value = QStandardItem('%s' %temp_info.getName())
-            value = QStandardItem(temp_info.getName())
-            self.model.setItem(i, 0, value)
+                value = QStandardItem(temp_info.getName())
+                self.model.setItem(i, 0, value)
+
             #self.tableWidget.setItem(i, 0, QTableWidgetItem(value))  # 设置i行0列的内容为Value
             # self.tableWidget.setColumnWidth(j, 80)  # 设置j列的宽度
             # self.tableWidget.setRowHeight(i, 50)  # 设置i行的高度
 
-        for i in range(self.num):
-            temp_info = temp_list[i]
-            self.launch.setFileFullPath(temp_info)
+            for i in range(self.num):
+                temp_info = temp_list[i]
+                self.launch.setFileFullPath(temp_info)
             #value = temp_info.getPath()
-            value = QStandardItem(temp_info.getPath())
-            self.model.setItem(i, 1, value)
+                value = QStandardItem(temp_info.getPath())
+                self.model.setItem(i, 1, value)
             #self.tableWidget.setItem(i, 1, QTableWidgetItem(value))  # 设置i行1列的内容为Value
 
-        for i in range(self.num):
-            temp_info = temp_list[i]
-            self.launch.setFileFullPath(temp_info)
+            for i in range(self.num):
+                temp_info = temp_list[i]
+                self.launch.setFileFullPath(temp_info)
             #value = temp_info.getSize()
-            value = QStandardItem(temp_info.getSize())
-            self.model.setItem(i, 2, value)
+                value = QStandardItem(temp_info.getSize())
+                self.model.setItem(i, 2, value)
             #self.tableWidget.setItem(i, 2, QTableWidgetItem(value))  # 设置i行2列的内容为Value
 
-        for i in range(self.num):
-            temp_info = temp_list[i]
-            self.launch.setFileFullPath(temp_info)
+            for i in range(self.num):
+                temp_info = temp_list[i]
+                self.launch.setFileFullPath(temp_info)
             #value = temp_info.getModifyTime()
-            value = QStandardItem(temp_info.getModifyTime())
-            self.model.setItem(i, 3, value)
+                value = QStandardItem(temp_info.getModifyTime())
+                self.model.setItem(i, 3, value)
             #self.tableWidget.setItem(i, 3, QTableWidgetItem(value))  # 设置i行3列的内容为Value
-        self.tableView = QTableView()
-        self.tableView.setModel(self.model)
+            self.tableView = QTableView()
+            self.tableView.setEditTriggers(QTableView.NoEditTriggers)   #不可编辑®
+            self.tableView.setModel(self.model)
 
         # 水平方向标签拓展剩下的窗口部分，填满表格
-        self.tableView.horizontalHeader().setStretchLastSection(True)
+        #self.tableView.horizontalHeader().setStretchLastSection(True)
         # 水平方向，表格大小拓展到适当的尺寸
-        self.tableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+            self.tableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        # 设置只有行选中, 整行选中
+            self.tableView.setSelectionBehavior(QAbstractItemView.SelectRows)
 
-        self.result.addWidget(self.tableView)
+        #self.tableView.resizeColumnsToContents()  # 设置列宽高按照内容自适应
+        #self.tableView.resizeRowsToContents()  # 设置行宽和高按照内容自适应
+
+            self.result.addWidget(self.tableView)
 
         # for i in range(self.num):
         #     temp_info = temp_list[i]
@@ -221,6 +237,9 @@ class Ico(QWidget):
     #     #     QMessageBox.about(self, 'result', address)
     #     #     self.text.setFocus()
     #     #     # self.text.clear()
+
+    #def openDir(self):
+
 
     def closeEvent(self, event):
         #QMessageBox.question, critical, warining, information 代表四个不同的图标
