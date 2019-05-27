@@ -1,7 +1,10 @@
+from PyQt5.QtCore import QPoint, QModelIndex, QVariant
+import os
 from PyQt5.QtWidgets import QWidget, QPushButton, QMessageBox, QLineEdit, QHBoxLayout, QVBoxLayout, \
     QFormLayout, QLabel, QTableView, QHeaderView, QAbstractItemView, QToolTip
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QCursor
-from PyQt5 import QtCore, sip
+from PyQt5 import QtCore, sip, QtGui
+from mongoengine import connect
 
 from src.dbConnector.dbConnector import *
 
@@ -52,13 +55,12 @@ class Ico(QWidget):
         self.searchLabel = QLabel("File Name:")
         self.searchLineEdit = QLineEdit(self)
         self.searchLineEdit.setFocus()
-        self.searchLineEdit.setPlaceholderText("Enter the file's name here")
+        self.searchLineEdit.setPlaceholderText(" Enter the file's name here.")
         self.searchLineEdit.setClearButtonEnabled(True)
-        self.searchLineEdit.setMinimumSize(170, 25)
+        self.searchLineEdit.setMinimumSize(180, 25)
         self.count = -1
 
         self.search.clicked.connect(lambda:self.showResult(self.searchLineEdit.text()))
-
         # # # 水平布局，添加一个拉伸因子和按钮
         # # hbox_search = QHBoxLayout()
         # # # addStretch函数的作用是在布局器中增加一个伸缩量，里面的参数表示QSpacerItem的个数，默认值为零，会将你放在layout中的空间压缩成默认的大小。
@@ -87,14 +89,13 @@ class Ico(QWidget):
         hbox_search.addWidget(self.search)
         hbox_search.addStretch(1)  # 增加伸缩量
 
-
         self.result = QVBoxLayout()
         #self.result.addStretch(1)
         self.result.addLayout(hbox_search)
         #self.result.addStretch(6)  # 增加伸缩量
         # self.result.addWidget(self.tableView)
-        self.setLayout(self.result)
-        hbox_click = QHBoxLayout()
+        #self.setLayout(self.result)
+        # hbox_click = QHBoxLayout()
         # hbox_click.addStretch(1)
         # hbox_click.addWidget(self.resultLabel)
         # hbox_click.addStretch(1)
@@ -111,6 +112,8 @@ class Ico(QWidget):
         #设置窗口的主要布局
         self.setLayout(self.result)
         self.show()
+    def openDir(self, row):
+        print(self.model.item(row, 1))
 
     def showResult(self, file_name):
         if file_name !="":
@@ -141,7 +144,9 @@ class Ico(QWidget):
         # self.tableWidget.setRowCount(self.num)
             temp_list = self.launch.search_file(file_name)
             self.tableView = QTableView()
-            self.tableView.setEditTriggers(QTableView.NoEditTriggers)  # 不可编辑®
+            self.tableView.setEditTriggers(QTableView.NoEditTriggers)  # 不可编辑
+            self.tableView.setMouseTracking(True)
+
             for i in range(self.num):
                 temp_info = temp_list[i]
                 self.launch.setFileFullPath(temp_info)
@@ -149,7 +154,7 @@ class Ico(QWidget):
             #value = QStandardItem('%s' %temp_info.getName())
                 value = QStandardItem(temp_info.getName())
                 self.model.setItem(i, 0, value)
-
+                self.model.item(i, 0)
             #self.tableWidget.setItem(i, 0, QTableWidgetItem(value))  # 设置i行0列的内容为Value
             # self.tableWidget.setColumnWidth(j, 80)  # 设置j列的宽度
             # self.tableWidget.setRowHeight(i, 50)  # 设置i行的高度
@@ -182,21 +187,49 @@ class Ico(QWidget):
             #value = temp_info.getModifyTime()
                 value = QStandardItem(temp_info.getModifyTime())
                 self.model.setItem(i, 3, value)
+
             #self.tableWidget.setItem(i, 3, QTableWidgetItem(value))  # 设置i行3列的内容为Value
 
             self.tableView.setModel(self.model)
+            self.index = self.model.index(self.tableView.currentIndex().row(), self.tableView.currentIndex().column())
+            #data = self.model.data(index)
+            #self.tableView.clicked.connect(self.getCurrentIndex(self.index))  # 将click信号与getCurrentIndex函数绑定
 
+            #self.tableView.setToolTip("test")
+
+            # print(self.model.item(row, 1))
+            self.tableView.doubleClicked.connect(self.openDir)
+            self.tableView.clicked.connect(self.toolTip)
+            #self.tableView.setToolTip(self.cell_value)
+            # temp_widget = self.tableView.indexWidget(list[0], list[1])
+            # temp_widget
+            #self.tableView.clicked.connect(self.openDir(row))
         # 水平方向标签拓展剩下的窗口部分，填满表格
         #self.tableView.horizontalHeader().setStretchLastSection(True)
         # 水平方向，表格大小拓展到适当的尺寸
             self.tableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         # 设置只有行选中, 整行选中
             self.tableView.setSelectionBehavior(QAbstractItemView.SelectRows)
-
         #self.tableView.resizeColumnsToContents()  # 设置列宽高按照内容自适应
         #self.tableView.resizeRowsToContents()  # 设置行宽和高按照内容自适应
 
             self.result.addWidget(self.tableView)
+
+            self.showLabel = QLabel("Result")
+            self.showLine = QLineEdit(self)
+            self.showLine.setReadOnly(True)
+            self.showLine.setPlaceholderText(" Here is the clicked result.")
+            self.showLine.setMinimumSize(450, 25)
+
+            hbox_show = QHBoxLayout()
+            # addStretch函数的作用是在布局器中增加一个伸缩量，里面的参数表示QSpacerItem的个数，默认值为零，会将你放在layout中的空间压缩成默认的大小。
+            hbox_show.addStretch(2)
+            hbox_show.addWidget(self.showLabel)
+            hbox_show.addStretch(1)
+            hbox_show.addWidget(self.showLine)
+            hbox_show.addStretch(2)
+
+            self.result.addLayout(hbox_show)
 
         # for i in range(self.num):
         #     temp_info = temp_list[i]
@@ -243,9 +276,30 @@ class Ico(QWidget):
     #     #     QMessageBox.about(self, 'result', address)
     #     #     self.text.setFocus()
     #     #     # self.text.clear()
+    def openDir(self, signal):
+        row = signal.row()  # RETRIEVES ROW OF CELL THAT WAS DOUBLE CLICKED
+        #column = signal.column()  # RETRIEVES COLUMN OF CELL THAT WAS DOUBLE CLICKED
+        #cell_dict = self.model.itemData(signal)  # RETURNS DICT VALUE OF SIGNAL
+        #cell_value = cell_dict.get(0)  # RETRIEVE VALUE FROM DICT
 
-    #def openDir(self):
+        index = signal.sibling(row, 1)
+        index_dict = self.model.itemData(index)
+        path = index_dict.get(0)
+        os.system('open ' + path)
+        # print(
+        #     'Row {}, Column {} clicked - value: {}\nColumn 1 contents: {}'.format(row, column, cell_value, index_value))
 
+    def toolTip(self, signal):
+        row = signal.row()  # RETRIEVES ROW OF CELL THAT WAS DOUBLE CLICKED
+        column = signal.column()  # RETRIEVES COLUMN OF CELL THAT WAS DOUBLE CLICKED
+        cell_dict = self.model.itemData(signal)  # RETURNS DICT VALUE OF SIGNAL
+        cell_value = cell_dict.get(0)  # RETRIEVE VALUE FROM DICT
+        self.showLine.setText(cell_value)
+        # list = []
+        # list.append(row)
+        # list.append(column)
+        # list.append(cell_value)
+        # return list
 
     def closeEvent(self, event):
         #QMessageBox.question, critical, warining, information 代表四个不同的图标
