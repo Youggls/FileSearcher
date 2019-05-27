@@ -1,8 +1,8 @@
-from PyQt5 import sip
-from PyQt5.QtCore import QPoint
 from PyQt5.QtWidgets import QWidget, QPushButton, QMessageBox, QLineEdit, QHBoxLayout, QVBoxLayout, \
     QFormLayout, QLabel, QTableView, QHeaderView, QAbstractItemView, QToolTip
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QCursor
+from PyQt5 import QtCore
+
 from src.dbConnector.dbConnector import *
 
 # #如果写了这句话并将执行的语句放到这个判断语句的后面，那么只有在程序本身被执行的时候才能运行这个判断语句下面的语句。否则程序被作为模块导入的时候就会执行。
@@ -140,7 +140,8 @@ class Ico(QWidget):
         # self.tableWidget.setColumnCount(4)
         # self.tableWidget.setRowCount(self.num)
             temp_list = self.launch.search_file(file_name)
-
+            self.tableView = QTableView()
+            self.tableView.setEditTriggers(QTableView.NoEditTriggers)  # 不可编辑®
             for i in range(self.num):
                 temp_info = temp_list[i]
                 self.launch.setFileFullPath(temp_info)
@@ -165,8 +166,14 @@ class Ico(QWidget):
                 temp_info = temp_list[i]
                 self.launch.setFileFullPath(temp_info)
             #value = temp_info.getSize()
-                value = QStandardItem(temp_info.getSize())
-                self.model.setItem(i, 2, value)
+                if temp_info.getIsFolder():
+                    value = QStandardItem("-")
+                    self.model.setItem(i, 2, value)
+                    self.model.item(i,2).setTextAlignment(QtCore.Qt.AlignCenter)
+                else:
+                    value = QStandardItem(temp_info.getSize())
+                    self.model.setItem(i, 2, value)
+
             #self.tableWidget.setItem(i, 2, QTableWidgetItem(value))  # 设置i行2列的内容为Value
 
             for i in range(self.num):
@@ -176,8 +183,7 @@ class Ico(QWidget):
                 value = QStandardItem(temp_info.getModifyTime())
                 self.model.setItem(i, 3, value)
             #self.tableWidget.setItem(i, 3, QTableWidgetItem(value))  # 设置i行3列的内容为Value
-            self.tableView = QTableView()
-            self.tableView.setEditTriggers(QTableView.NoEditTriggers)   #不可编辑®
+
             self.tableView.setModel(self.model)
 
         # 水平方向标签拓展剩下的窗口部分，填满表格
