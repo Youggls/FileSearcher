@@ -32,14 +32,12 @@ class Ico(QWidget):
 
         self.launch = dbConnector('127.0.0.1', 'Raymond777', 'Ytk981213', 'test')
 
-        self.setGeometry(300, 300, 300, 220)
+        self.setGeometry(300, 300, 600, 440)
         self.setWindowTitle('FileSearcher')
 
         self.search = QPushButton('Search', self)
         #self.search.setGeometry(115, 150, 70, 30)
         self.search.setToolTip("<b>Click the button to search the file</b>")
-
-
 
         # self.text = QLineEdit("Enter the file's name here", self)
         # #将默认字符串全选，便于输入文件名
@@ -49,11 +47,12 @@ class Ico(QWidget):
         # self.text.setGeometry(80, 50, 150, 30)
 
         self.formlayout = QFormLayout()
-        self.searchLabel = QLabel("File Name")
+        self.searchLabel = QLabel("File Name:")
         self.searchLineEdit = QLineEdit(self)
         self.searchLineEdit.setFocus()
         self.searchLineEdit.setPlaceholderText("Enter the file's name here")
         self.searchLineEdit.setClearButtonEnabled(True)
+        self.searchLineEdit.setMinimumSize(170, 25)
         self.search.clicked.connect(lambda:self.showResult(self.searchLineEdit.text()))
 
         # # # 水平布局，添加一个拉伸因子和按钮
@@ -82,13 +81,13 @@ class Ico(QWidget):
         hbox_search.addWidget(self.searchLineEdit)
         hbox_search.addStretch(1)
         hbox_search.addWidget(self.search)
-        hbox_search.addStretch(3)  # 增加伸缩量
+        hbox_search.addStretch(1)  # 增加伸缩量
 
 
         self.result = QVBoxLayout()
-        self.result.addStretch(1)
+        #self.result.addStretch(1)
         self.result.addLayout(hbox_search)
-        self.result.addStretch(6)  # 增加伸缩量
+        #self.result.addStretch(6)  # 增加伸缩量
         # self.result.addWidget(self.tableView)
         self.setLayout(self.result)
         hbox_click = QHBoxLayout()
