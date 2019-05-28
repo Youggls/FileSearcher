@@ -46,13 +46,13 @@ class dbConnector:
         self.__db_cursor.close()
         self.__db_obj.close()
 
-    def insert_file_obj(self, file_info_obj, pre_folder_id):
+    def insert_file_obj(self, file_info_obj, pre_folder_id, isFolder):
         if type(file_info_obj) != FileInfo:
             raise RuntimeError('The file_info_obj must be a FileInfo Object!')
 
         self.__insert_single_file(file_info_obj.getHash(), file_info_obj.getName(),
                                 file_info_obj.getModifyTime(), file_info_obj.getSize(),
-                                pre_folder_id)
+                                pre_folder_id, isFolder)
 
     def search_file(self, file_name) -> list:
         self.__search_file(file_name)
@@ -72,8 +72,15 @@ class dbConnector:
             name_list.append(t)
 
         fullPath = ''
-        for name in name_list:
-            fullPath += name + '/'
+        for name in reversed(name_list):
+            if SYSTEM_TYPE == "MacOS":
+                fullPath += name
+                if name != '/':
+                    fullPath += '/'
+            elif SYSTEM_TYPE == "Windows":
+                fullPath += name
+                if name not in self.__disk:
+                    fullPath += '\\'
 
         file.setFullPath(fullPath)
 
@@ -86,7 +93,7 @@ class dbConnector:
         for char in char_list:
             if os.path.isdir(char + ':\\'):
                 disk_list.append(char)
-        
+        self.__disk = disk_list
         for disk in disk_list:
             g = os.walk(disk + ':\\')
             #Insert the root to the database
@@ -94,7 +101,7 @@ class dbConnector:
             h.update(str(disk + ':\\').encode('utf8'))
             hash_id = h.hexdigest()
             f = FileInfo(disk, True, 'null', hash_id, size='0KB')
-            self.insert_file_obj(f, hash_id)
+            self.insert_file_obj(f, hash_id, True)
             for path, dir_list, file_list in g:
                 for dir_name in dir_list:
                     full_path = os.path.join(path, dir_name)
@@ -110,7 +117,7 @@ class dbConnector:
                     h.update(os.path.join(path).encode('utf8'))
                     pre_folder_id = h.hexdigest()
                     f = FileInfo(dir_name, True, modify_time, hash_id, size=size)
-                    self.insert_file_obj(f, pre_folder_id)
+                    self.insert_file_obj(f, pre_folder_id, True)
 
                 for file_name in file_list:
                     full_path = os.path.join(path, file_name)
@@ -126,7 +133,7 @@ class dbConnector:
                     h.update(os.path.join(path).encode('utf8'))
                     pre_folder_id = h.hexdigest()
                     f = FileInfo(file_name, False, modify_time, hash_id, size=size)
-                    self.insert_file_obj(f, pre_folder_id)
+                    self.insert_file_obj(f, pre_folder_id, False)
 
     def __macOS_walk_path(self):
         g = os.walk('/')
@@ -134,7 +141,7 @@ class dbConnector:
         h.update('/'.encode('utf8'))
         hash_id = h.hexdigest()
         f = FileInfo('/', True, 'null', hash_id, size='0KB')
-        self.insert_file_obj(f, hash_id)
+        self.insert_file_obj(f, hash_id, True)
         for path, dir_list, file_list in g:
             for dir_name in dir_list:
                 full_path = os.path.join(path, dir_name)
@@ -151,7 +158,7 @@ class dbConnector:
                     h.update(os.path.join(path).encode('utf8'))
                     pre_folder_id = h.hexdigest()
                     f = FileInfo(dir_name, True, modify_time, hash_id, size=size)
-                    self.insert_file_obj(f, pre_folder_id)
+                    self.insert_file_obj(f, pre_folder_id, True)
                 except OSError:
                     pass
 
@@ -170,7 +177,7 @@ class dbConnector:
                     h.update(os.path.join(path).encode('utf8'))
                     pre_folder_id = h.hexdigest()
                     f = FileInfo(file_name, False, modify_time, hash_id, size=size)
-                    self.insert_file_obj(f, pre_folder_id)
+                    self.insert_file_obj(f, pre_folder_id, False)
                 except OSError:
                     pass
 
