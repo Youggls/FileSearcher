@@ -1,5 +1,4 @@
 import hashlib
-from global_var import SYSTEM_TYPE
 
 class FileInfo:
 
@@ -41,10 +40,7 @@ class FileInfo:
 
     def getPath(self) -> str:
         if self.__path != None:
-            if SYSTEM_TYPE == 'Windows':
-                return self.__path.replace('/', '\\')
-            else:
-                return self.__path
+            return self.__path
         else:
             raise RuntimeError('The path not set!')
 

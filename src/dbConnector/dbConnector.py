@@ -2,8 +2,8 @@ import pymysql
 import hashlib
 import time
 import os
+import json
 from src.dbConnector.FileInfo import FileInfo
-from global_var import SYSTEM_TYPE
 
 class dbConnector:
     'The class is used to establish connection between the database and the appliction'
@@ -26,13 +26,14 @@ class dbConnector:
             raise RuntimeError('The db_pwd must be a string type!')
         if type(default_schema) != str:
             raise RuntimeError('The defalut_schema must be a string type!')
+        self.__read_config()
 
         self.__db_obj = pymysql.connect(host_name, db_usr, db_pwd, default_schema)
         self.__db_cursor = self.__db_obj.cursor()
         self.__host_name = host_name
         self.__db_usr_name = db_usr
         self.__db_pwd = db_pwd
-        if SYSTEM_TYPE == 'Windows':
+        if self.__data['System_type'] == 'Windows':
             disk_list = []
             char_list = [chr(i) for i in range(65, 91)]
             for char in char_list:
@@ -42,10 +43,16 @@ class dbConnector:
         #self.__init_database()
 
     def walk_path(self):
-        if SYSTEM_TYPE == "Windows":
-            self.__windows_walk_path()
-        elif SYSTEM_TYPE == "MacOS":
-            self.__macOS_walk_path()
+        try:
+            if self.__data['System_type'] == 'Windows':
+                self.__windows_walk_path()
+            elif self.__data['System_type'] == 'MacOS':
+                self.__macOS_walk_path()
+            print('{}/mysql\" -h {} -u {} -p{} {} <./bin/temp.sql'.format(self.__data['Mysql_bin_path'], self.__data['db_host_name'], self.__db_usr_name, self.__db_pwd, self.__data['db_schema']))
+            os.system('{}/mysql\" -h {} -u {} -p{} {} <./bin/temp.sql'.format(self.__data['Mysql_bin_path'], self.__data['db_host_name'], self.__db_usr_name, self.__db_pwd, self.__data['db_schema']))
+            os.remove('./bin/temp.sql')
+        except:
+            self.__db_obj.rollback()
 
     'Destructor, to close the connection and commit all'
     def __del__(self):
@@ -80,11 +87,11 @@ class dbConnector:
 
         fullPath = ''
         for name in reversed(name_list):
-            if SYSTEM_TYPE == "MacOS":
+            if self.__data['System_type'] == "MacOS":
                 fullPath += name
                 if name != '/':
                     fullPath += '/'
-            elif SYSTEM_TYPE == "Windows":
+            elif self.__data['System_type'] == "Windows":
                 fullPath += name
                 if name not in self.__disk:
                     fullPath += '\\'
@@ -102,6 +109,7 @@ class dbConnector:
         for char in char_list:
             if os.path.isdir(char + ':\\'):
                 disk_list.append(char)
+        count = 0
         #self.__disk = disk_list
         for disk in disk_list:
             g = os.walk(disk + ':\\')
@@ -112,13 +120,18 @@ class dbConnector:
             f = FileInfo(disk + ':', True, 'null', hash_id, size='0KB')
             self.insert_file_obj(f, hash_id, True)
             for path, dir_list, file_list in g:
+                if count % 1000 == 0:
+                    print(count)
+                if count >= 10000:
+                    return
                 for dir_name in dir_list:
+                    count += 1
                     full_path = os.path.join(path, dir_name)
                     statinfo = os.stat(full_path)
                     local = time.localtime(statinfo.st_ctime)
                     modify_time = str(local.tm_year) + '-' + str(local.tm_mon) + '-' + str(local.tm_mday) + ' ' + str(local.tm_hour) + ':' + str(local.tm_min) + ':' + str(local.tm_sec)
 
-                    size = str(statinfo.st_size / 1024) + 'KB'
+                    size = str(round((statinfo.st_size / 1024), 2)) + 'KB'
                     h = hashlib.md5()
                     h.update(full_path.encode('utf8'))
                     hash_id = h.hexdigest()
@@ -129,12 +142,15 @@ class dbConnector:
                     self.insert_file_obj(f, pre_folder_id, True)
 
                 for file_name in file_list:
+                    if count % 1000 == 0:
+                        print(count)
+                    count += 1
                     full_path = os.path.join(path, file_name)
                     statinfo = os.stat(full_path)
                     local = time.localtime(statinfo.st_ctime)
                     modify_time = str(local.tm_year) + '-' + str(local.tm_mon) + '-' + str(local.tm_mday) + ' ' + str(local.tm_hour) + ':' + str(local.tm_min) + ':' + str(local.tm_sec)
 
-                    size = str(statinfo.st_size / 1024) + 'KB'
+                    size = str(round((statinfo.st_size / 1024), 2)) + 'KB'
                     h = hashlib.md5()
                     h.update(full_path.encode('utf8'))
                     hash_id = h.hexdigest()
@@ -151,15 +167,19 @@ class dbConnector:
         hash_id = h.hexdigest()
         f = FileInfo('/', True, 'null', hash_id, size='0KB')
         self.insert_file_obj(f, hash_id, True)
+        count = 0
         for path, dir_list, file_list in g:
             for dir_name in dir_list:
+                if count % 1000 == 0:
+                    print(count)
+                count += 1
                 full_path = os.path.join(path, dir_name)
                 try:
                     statinfo = os.stat(full_path)
                     local = time.localtime(statinfo.st_ctime)
                     modify_time = str(local.tm_year) + '-' + str(local.tm_mon) + '-' + str(local.tm_mday) + ' ' + str(local.tm_hour) + ':' + str(local.tm_min) + ':' + str(local.tm_sec)
 
-                    size = str(statinfo.st_size / 1024) + 'KB'
+                    size = str(round((statinfo.st_size / 1024), 2)) + 'KB'
                     h = hashlib.md5()
                     h.update(full_path.encode('utf8'))
                     hash_id = h.hexdigest()
@@ -172,13 +192,16 @@ class dbConnector:
                     pass
 
             for file_name in file_list:
+                if count % 1000 == 0:
+                    print(count)
+                count += 1
                 full_path = os.path.join(path, file_name)
                 try:
                     statinfo = os.stat(full_path)
                     local = time.localtime(statinfo.st_ctime)
                     modify_time = str(local.tm_year) + '-' + str(local.tm_mon) + '-' + str(local.tm_mday) + ' ' + str(local.tm_hour) + ':' + str(local.tm_min) + ':' + str(local.tm_sec)
 
-                    size = str(statinfo.st_size / 1024) + 'KB'
+                    size = str(round((statinfo.st_size / 1024), 2)) + 'KB'
                     h = hashlib.md5()
                     h.update(full_path.encode('utf8'))
                     hash_id = h.hexdigest()
@@ -225,7 +248,10 @@ class dbConnector:
             if index != len(value_list) - 1:
                 sql += ','
         sql += ')'
-        self.__db_cursor.execute(sql)
+        f = open('./bin/temp.sql', 'a')
+        f.write(sql + ';' + '\n')
+        f.close()
+        #self.__db_cursor.execute(sql)
 
     'insert single_file into database, info includes the name, modify_time, size, isFolder'
     def __insert_single_file(self, hash_id, name, modify_time, size, pre_folder_id, isFolder=True):
@@ -236,15 +262,14 @@ class dbConnector:
 
         value_list = ["'{}'".format(hash_id), "\"{}\"".format(name.replace('"', '\\"')), "'{}'".format(str(modify_time)), "'{}'".format(size), str(isFolder), "'{}'".format(pre_folder_id)]
 
-        try:
-            self.__insert_info('file_info', value_list)
-            self.__db_obj.commit()
-        except Exception as e:
-            self.__db_obj.rollback()
-            print(name)
-            raise Exception(e)
+        self.__insert_info('file_info', value_list)
 
-    def __init_database(self):
+    def init_database(self):
         self.__db_cursor.execute('drop table if exists file_info')
         create_database = "create table file_info ( hash_id varchar(100) primary key, name varchar(300) not null, modify_time varchar(30) not null, size varchar(20), isFolder bool, pre_folder_id varchar(100), constraint foreign key (pre_folder_id) references file_info(hash_id));"
         self.__db_cursor.execute(create_database)
+
+    def __read_config(self):
+        config_dir = './bin/config.json'
+        with open(config_dir, encoding='utf8') as f:
+            self.__data = json.load(f)
