@@ -213,10 +213,13 @@ class Ico(QWidget):
         # 水平方向标签拓展剩下的窗口部分，填满表格
         #     self.tableView.horizontalHeader().setStretchLastSection(True)
             self.tableView.horizontalHeader().resizeSection(1, 380)
-            self.tableView.horizontalHeader().resizeSection(0, 170)
-            self.tableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+            self.tableView.horizontalHeader().resizeSection(0, 160)
+            #self.tableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
             self.tableView.horizontalHeader().setSectionResizeMode(0, QHeaderView.Interactive)
-            self.tableView.horizontalHeader().setSectionResizeMode(1, QHeaderView.Interactive)
+            #self.tableView.horizontalHeader().setSectionResizeMode(1, QHeaderView.Interactive)
+            self.tableView.horizontalHeader().setSectionResizeMode(2, QHeaderView.Interactive)
+            self.tableView.horizontalHeader().setSectionResizeMode(3, QHeaderView.Interactive)
+            self.tableView.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
             #self.tableView.horizontalHeader().setSectionResizeMode(2, QHeaderView.Interactive)
             #self.tableView.horizontalHeader().setSectionResizeMode(3, QHeaderView.Interactive)
         # 水平方向，表格大小拓展到适当的尺寸
