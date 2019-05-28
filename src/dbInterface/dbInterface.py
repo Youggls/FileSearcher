@@ -162,6 +162,7 @@ class Ico(QWidget):
                 value = QStandardItem(temp_info.getName())
                 self.model.setItem(i, 0, value)
                 self.model.item(i, 0)
+                self.model.item(i, 0).setFont(QtGui.QFont("Monaco", 10, QtGui.QFont.Black))
             #self.tableWidget.setItem(i, 0, QTableWidgetItem(value))  # 设置i行0列的内容为Value
             # self.tableWidget.setColumnWidth(j, 80)  # 设置j列的宽度
             # self.tableWidget.setRowHeight(i, 50)  # 设置i行的高度
@@ -172,6 +173,7 @@ class Ico(QWidget):
             #value = temp_info.getPath()
                 value = QStandardItem(temp_info.getPath())
                 self.model.setItem(i, 1, value)
+                self.model.item(i, 1).setFont(QtGui.QFont("Monaco", 10, QtGui.QFont.Black))
             #self.tableWidget.setItem(i, 1, QTableWidgetItem(value))  # 设置i行1列的内容为Value
 
             for i in range(self.num):
@@ -182,9 +184,11 @@ class Ico(QWidget):
                     value = QStandardItem("-")
                     self.model.setItem(i, 2, value)
                     self.model.item(i,2).setTextAlignment(QtCore.Qt.AlignCenter)
+                    self.model.item(i, 2).setFont(QtGui.QFont("Monaco", 10, QtGui.QFont.Black))
                 else:
                     value = QStandardItem(temp_info.getSize())
                     self.model.setItem(i, 2, value)
+                    self.model.item(i, 2).setFont(QtGui.QFont("Monaco", 10, QtGui.QFont.Black))
 
             #self.tableWidget.setItem(i, 2, QTableWidgetItem(value))  # 设置i行2列的内容为Value
 
@@ -194,6 +198,7 @@ class Ico(QWidget):
             #value = temp_info.getModifyTime()
                 value = QStandardItem(temp_info.getModifyTime())
                 self.model.setItem(i, 3, value)
+                self.model.item(i, 3).setFont(QtGui.QFont("Monaco", 10, QtGui.QFont.Black))
 
             #self.tableWidget.setItem(i, 3, QTableWidgetItem(value))  # 设置i行3列的内容为Value
             if self.model.item(0, 1) == None:
@@ -204,8 +209,9 @@ class Ico(QWidget):
                 else:
                     self.close()
             else:
+                self.model.sort(0, QtCore.Qt.AscendingOrder)
                 self.tableView.setModel(self.model)
-                self.index = self.model.index(self.tableView.currentIndex().row(), self.tableView.currentIndex().column())
+                #self.index = self.model.index(self.tableView.currentIndex().row(), self.tableView.currentIndex().column())
             #data = self.model.data(index)
             #self.tableView.clicked.connect(self.getCurrentIndex(self.index))  # 将click信号与getCurrentIndex函数绑定
 
@@ -236,11 +242,11 @@ class Ico(QWidget):
                 self.tableView.setSelectionBehavior(QAbstractItemView.SelectRows)
         #self.tableView.resizeColumnsToContents()  # 设置列宽高按照内容自适应
         #self.tableView.resizeRowsToContents()  # 设置行宽和高按照内容自适应
-                self.tableView.item
                 self.result.addWidget(self.tableView)
 
                 self.showLabel = QLabel("Result")
                 self.showLine = QLineEdit(self)
+                self.showLine.setFont(QtGui.QFont("Monaco", 13, QtGui.QFont.Black))
                 self.showLine.setReadOnly(True)
                 self.showLine.setPlaceholderText(" Here is the clicked result.")
                 self.showLine.setMinimumSize(650, 25)
