@@ -1,8 +1,10 @@
+import sys
+
 from PyQt5.QtCore import QPoint, QModelIndex, QVariant
 import os
 from PyQt5.QtWidgets import QWidget, QPushButton, QMessageBox, QLineEdit, QHBoxLayout, QVBoxLayout, \
-    QFormLayout, QLabel, QTableView, QHeaderView, QAbstractItemView, QToolTip, QDesktopWidget
-from PyQt5.QtGui import QStandardItemModel, QStandardItem, QCursor
+    QFormLayout, QLabel, QTableView, QHeaderView, QAbstractItemView, QToolTip, QDesktopWidget, QApplication
+from PyQt5.QtGui import QStandardItemModel, QStandardItem, QCursor, QIcon
 from PyQt5 import QtCore, sip, QtGui
 from mongoengine import connect
 from global_var import SYSTEM_TYPE
@@ -40,11 +42,33 @@ class Ico(QWidget):
         #self.launch.walk_path()
         self.setGeometry(325, 140, 800, 600)
         self.center()
+        self.setWindowOpacity(0.95)  # 设置窗口透明度
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)  # 设置窗口背景透明
+        #self.setWindowFlag(QtCore.Qt.FramelessWindowHint)  # 隐藏边框
         self.setWindowTitle('FileSearcher')
+        path = os.path.join(os.path.dirname(sys.modules[__name__].__file__), 'dva_testIcon.ico')
+        self.setWindowIcon(QIcon(path))
 
         self.search = QPushButton('Search', self)
         #self.search.setGeometry(115, 150, 70, 30)
         self.search.setToolTip("<b>Click the button to search the file</b>")
+        # self.search.setStyleSheet('''
+        #     QPushButton{
+        #         border:black;
+        #         color:black;
+        #         font-size:14px;
+        #         height:40px;
+        #         padding-left:10px;
+        #         padding-right:10px;
+        #         border-radius:11px;
+        #     }
+        #     QPushButton:hover{
+        #         color:black;
+        #         border:1px solid #F3F3F5;
+        #         border-radius:11px;
+        #         background:LightGray;
+        #     }
+        # ''')
 
         # self.text = QLineEdit("Enter the file's name here", self)
         # #将默认字符串全选，便于输入文件名
@@ -55,13 +79,22 @@ class Ico(QWidget):
 
         self.formlayout = QFormLayout()
         self.searchLabel = QLabel("File Name:")
+        self.searchLabel.setObjectName('searchLabel')
         self.searchLineEdit = QLineEdit(self)
-        self.searchLineEdit.setFocus()
+        #self.searchLineEdit.setFocus()
         self.searchLineEdit.setPlaceholderText(" Enter the file's name here.")
         self.searchLineEdit.setClearButtonEnabled(True)
         self.searchLineEdit.setMinimumSize(300, 25)
+        self.searchLineEdit.setStyleSheet(
+            '''QLineEdit{
+                    border:1px solid gray;
+                    width:300px;
+                    border-radius:11px;
+                    padding:2px 4px;
+            }''')
+
         self.searchLineEdit.returnPressed.connect(lambda:self.showResult(self.searchLineEdit.text()))
-        self.count = -1
+        self.count = 0
 
         self.search.clicked.connect(lambda:self.showResult(self.searchLineEdit.text()))
         # # # 水平布局，添加一个拉伸因子和按钮
@@ -82,19 +115,19 @@ class Ico(QWidget):
         # self.setLayout(self.formlayout)
 
         # 水平布局，添加一个拉伸因子和按钮
-        hbox_search = QHBoxLayout()
+        self.hbox_search = QHBoxLayout()
         # addStretch函数的作用是在布局器中增加一个伸缩量，里面的参数表示QSpacerItem的个数，默认值为零，会将你放在layout中的空间压缩成默认的大小。
-        hbox_search.addStretch(1)
-        hbox_search.addWidget(self.searchLabel)
-        hbox_search.addStretch(1)
-        hbox_search.addWidget(self.searchLineEdit)
-        hbox_search.addStretch(1)
-        hbox_search.addWidget(self.search)
-        hbox_search.addStretch(1)  # 增加伸缩量
+        self.hbox_search.addStretch(1)
+        self.hbox_search.addWidget(self.searchLabel)
+        self.hbox_search.addStretch(1)
+        self.hbox_search.addWidget(self.searchLineEdit)
+        self.hbox_search.addStretch(1)
+        self.hbox_search.addWidget(self.search)
+        self.hbox_search.addStretch(1)  # 增加伸缩量
 
         self.result = QVBoxLayout()
         #self.result.addStretch(1)
-        self.result.addLayout(hbox_search)
+        self.result.addLayout(self.hbox_search)
         #self.result.addStretch(6)  # 增加伸缩量
         # self.result.addWidget(self.tableView)
         #self.setLayout(self.result)
@@ -120,15 +153,7 @@ class Ico(QWidget):
 
     def showResult(self, file_name):
         if file_name !="":
-            self.count += 1
-            if self.count != 0:
-                self.result.removeWidget(self.tableView)
-                sip.delete(self.tableView)
-                self.result.removeWidget(self.showLine)
-                sip.delete(self.showLine)
-                self.result.removeWidget(self.showLabel)
-                sip.delete(self.showLabel)
-            self.resultLabel = QLabel("Result")
+
         # self.resultView = QListView()  # 创建ListView
         # self.resultModel = QStringListModel()  # 创建ListModel
         # temp_list = self.launch.search_file(file_name)
@@ -150,9 +175,6 @@ class Ico(QWidget):
         # self.tableWidget.setColumnCount(4)
         # self.tableWidget.setRowCount(self.num)
             temp_list = self.launch.search_file(file_name)
-            self.tableView = QTableView()
-            self.tableView.setEditTriggers(QTableView.NoEditTriggers)  # 不可编辑
-            self.tableView.setMouseTracking(True)
 
             for i in range(self.num):
                 temp_info = temp_list[i]
@@ -205,61 +227,90 @@ class Ico(QWidget):
                 reply = QMessageBox.warning(self, '确认', '没有相关文件，需要再次搜索吗？', QMessageBox.No | QMessageBox.Yes, QMessageBox.Yes)
                 if reply == QMessageBox.Yes:
                     self.searchLineEdit.setText("")
-                    self.count -= 1
+                    if self.count != 0:
+                        self.count = 1
+                    else:
+                        self.count = 0;
                 else:
+                    self.searchLineEdit.setText("")
+                    if self.count != 0:
+                        self.count = 1
+                    else:
+                        self.count = 0
                     self.close()
-            else:
+            elif self.count == 0:
+                self.count = 3
+            if self.count != 0:
+                if self.count == 2 or self.count == 1:
+                    self.result.removeWidget(self.tableView)
+                    sip.delete(self.tableView)
+                    self.result.removeWidget(self.showLine)
+                    sip.delete(self.showLine)
+                    self.result.removeWidget(self.showLabel)
+                    sip.delete(self.showLabel)
+                    # QApplication.processEvents()
+                self.tableView = QTableView()
+                self.tableView.setEditTriggers(QTableView.NoEditTriggers)  # 不可编辑
+                self.tableView.setMouseTracking(True)
+                self.count += 1
+                self.resultLabel = QLabel("Result")
                 self.model.sort(0, QtCore.Qt.AscendingOrder)
                 self.tableView.setModel(self.model)
-                #self.index = self.model.index(self.tableView.currentIndex().row(), self.tableView.currentIndex().column())
-            #data = self.model.data(index)
-            #self.tableView.clicked.connect(self.getCurrentIndex(self.index))  # 将click信号与getCurrentIndex函数绑定
+                # self.index = self.model.index(self.tableView.currentIndex().row(), self.tableView.currentIndex().column())
+                # data = self.model.data(index)
+                # self.tableView.clicked.connect(self.getCurrentIndex(self.index))  # 将click信号与getCurrentIndex函数绑定
 
-            #self.tableView.setToolTip("test")
+                # self.tableView.setToolTip("test")
 
-            # print(self.model.item(row, 1))
+                # print(self.model.item(row, 1))
                 self.tableView.doubleClicked.connect(self.openDir)
                 self.tableView.clicked.connect(self.toolTip)
-            #self.tableView.setToolTip(self.cell_value)
-            # temp_widget = self.tableView.indexWidget(list[0], list[1])
-            # temp_widget
-            #self.tableView.clicked.connect(self.openDir(row))
-        # 水平方向标签拓展剩下的窗口部分，填满表格
-        #     self.tableView.horizontalHeader().setStretchLastSection(True)
+                # self.tableView.setToolTip(self.cell_value)
+                # temp_widget = self.tableView.indexWidget(list[0], list[1])
+                # temp_widget
+                # self.tableView.clicked.connect(self.openDir(row))
+                # 水平方向标签拓展剩下的窗口部分，填满表格
+                #     self.tableView.horizontalHeader().setStretchLastSection(True)
                 self.tableView.horizontalHeader().resizeSection(1, 380)
                 self.tableView.horizontalHeader().resizeSection(0, 160)
-            #self.tableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+                # self.tableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
                 self.tableView.horizontalHeader().setSectionResizeMode(0, QHeaderView.Interactive)
-            #self.tableView.horizontalHeader().setSectionResizeMode(1, QHeaderView.Interactive)
+                # self.tableView.horizontalHeader().setSectionResizeMode(1, QHeaderView.Interactive)
                 self.tableView.horizontalHeader().setSectionResizeMode(2, QHeaderView.Interactive)
                 self.tableView.horizontalHeader().setSectionResizeMode(3, QHeaderView.Interactive)
                 self.tableView.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
-            #self.tableView.horizontalHeader().setSectionResizeMode(2, QHeaderView.Interactive)
-            #self.tableView.horizontalHeader().setSectionResizeMode(3, QHeaderView.Interactive)
-        # 水平方向，表格大小拓展到适当的尺寸
-            #self.tableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        # 设置只有行选中, 整行选中
+                # self.tableView.horizontalHeader().setSectionResizeMode(2, QHeaderView.Interactive)
+                # self.tableView.horizontalHeader().setSectionResizeMode(3, QHeaderView.Interactive)
+                # 水平方向，表格大小拓展到适当的尺寸
+                # self.tableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+                # 设置只有行选中, 整行选中
                 self.tableView.setSelectionBehavior(QAbstractItemView.SelectRows)
-        #self.tableView.resizeColumnsToContents()  # 设置列宽高按照内容自适应
-        #self.tableView.resizeRowsToContents()  # 设置行宽和高按照内容自适应
+                # self.tableView.resizeColumnsToContents()  # 设置列宽高按照内容自适应
+                # self.tableView.resizeRowsToContents()  # 设置行宽和高按照内容自适应
                 self.result.addWidget(self.tableView)
 
                 self.showLabel = QLabel("Result")
                 self.showLine = QLineEdit(self)
-                self.showLine.setFont(QtGui.QFont("Monaco", 13, QtGui.QFont.Black))
+                self.showLine.setStyleSheet(
+                    '''QLineEdit{
+                            border:1px solid gray;
+                            width:300px;
+                            border-radius:11px;
+                            padding:2px 4px;
+                    }''')
                 self.showLine.setReadOnly(True)
                 self.showLine.setPlaceholderText(" Here is the clicked result.")
                 self.showLine.setMinimumSize(650, 25)
 
                 hbox_show = QHBoxLayout()
-            # addStretch函数的作用是在布局器中增加一个伸缩量，里面的参数表示QSpacerItem的个数，默认值为零，会将你放在layout中的空间压缩成默认的大小。
+                # addStretch函数的作用是在布局器中增加一个伸缩量，里面的参数表示QSpacerItem的个数，默认值为零，会将你放在layout中的空间压缩成默认的大小。
                 hbox_show.addStretch(2)
                 hbox_show.addWidget(self.showLabel)
                 hbox_show.addStretch(1)
                 hbox_show.addWidget(self.showLine)
                 hbox_show.addStretch(2)
-
                 self.result.addLayout(hbox_show)
+                self.count = 2
 
         # for i in range(self.num):
         #     temp_info = temp_list[i]
