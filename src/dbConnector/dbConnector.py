@@ -137,6 +137,8 @@ class dbConnector:
                     self.insert_file_obj(f, pre_folder_id, True)
 
                 for file_name in file_list:
+                    if count % 1000 == 0:
+                        print(count)
                     count += 1
                     full_path = os.path.join(path, file_name)
                     statinfo = os.stat(full_path)
@@ -160,8 +162,12 @@ class dbConnector:
         hash_id = h.hexdigest()
         f = FileInfo('/', True, 'null', hash_id, size='0KB')
         self.insert_file_obj(f, hash_id, True)
+        count = 0
         for path, dir_list, file_list in g:
             for dir_name in dir_list:
+                if count % 1000 == 0:
+                    print(count)
+                count += 1
                 full_path = os.path.join(path, dir_name)
                 try:
                     statinfo = os.stat(full_path)
@@ -181,6 +187,9 @@ class dbConnector:
                     pass
 
             for file_name in file_list:
+                if count % 1000 == 0:
+                    print(count)
+                count += 1
                 full_path = os.path.join(path, file_name)
                 try:
                     statinfo = os.stat(full_path)
