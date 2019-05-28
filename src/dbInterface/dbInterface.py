@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import sys
 
 from PyQt5.QtCore import QPoint, QModelIndex, QVariant
@@ -6,14 +5,12 @@ import os
 from PyQt5.QtWidgets import QWidget, QPushButton, QMessageBox, QLineEdit, QHBoxLayout, QVBoxLayout, \
     QFormLayout, QLabel, QTableView, QHeaderView, QAbstractItemView, QToolTip, QDesktopWidget, QApplication
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QCursor, QIcon
-=======
 import os
 import json
 from PyQt5.QtWidgets import * 
 from src.dbConnector.dbConnector import *
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QCursor
 from PyQt5.QtCore import QPoint, QModelIndex, QVariant
->>>>>>> 0a4ee5b6a2828c9a6eb20247d10a15ebd2f1cbc6
 from PyQt5 import QtCore, sip, QtGui
 from mongoengine import connect
 
