@@ -36,8 +36,8 @@ class Ico(QWidget):
 
     def initUI(self):
 
-        self.launch = dbConnector('127.0.0.1', 'Raymond777', 'Ytk981213', 'test')
-
+        self.launch = dbConnector('127.0.0.1', 'youggls', 'lpylpy328', 'fileseacher')
+        #self.launch.walk_path()
         self.setGeometry(300, 300, 600, 440)
         self.setWindowTitle('FileSearcher')
 

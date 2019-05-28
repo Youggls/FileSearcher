@@ -32,6 +32,13 @@ class dbConnector:
         self.__host_name = host_name
         self.__db_usr_name = db_usr
         self.__db_pwd = db_pwd
+        if SYSTEM_TYPE == 'Windows':
+            disk_list = []
+            char_list = [chr(i) for i in range(65, 91)]
+            for char in char_list:
+                if os.path.isdir(char + ':\\'):
+                    disk_list.append(char)
+            self.__disk = disk_list
         #self.__init_database()
 
     def walk_path(self):
@@ -81,6 +88,8 @@ class dbConnector:
                 fullPath += name
                 if name not in self.__disk:
                     fullPath += '\\'
+                else:
+                    fullPath += ':\\'
 
         file.setFullPath(fullPath)
 
@@ -93,14 +102,14 @@ class dbConnector:
         for char in char_list:
             if os.path.isdir(char + ':\\'):
                 disk_list.append(char)
-        self.__disk = disk_list
+        #self.__disk = disk_list
         for disk in disk_list:
             g = os.walk(disk + ':\\')
             #Insert the root to the database
             h = hashlib.md5()
             h.update(str(disk + ':\\').encode('utf8'))
             hash_id = h.hexdigest()
-            f = FileInfo(disk, True, 'null', hash_id, size='0KB')
+            f = FileInfo(disk + ':', True, 'null', hash_id, size='0KB')
             self.insert_file_obj(f, hash_id, True)
             for path, dir_list, file_list in g:
                 for dir_name in dir_list:
