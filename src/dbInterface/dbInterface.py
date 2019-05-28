@@ -1,7 +1,7 @@
 from PyQt5.QtCore import QPoint, QModelIndex, QVariant
 import os
 from PyQt5.QtWidgets import QWidget, QPushButton, QMessageBox, QLineEdit, QHBoxLayout, QVBoxLayout, \
-    QFormLayout, QLabel, QTableView, QHeaderView, QAbstractItemView, QToolTip
+    QFormLayout, QLabel, QTableView, QHeaderView, QAbstractItemView, QToolTip, QDesktopWidget
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QCursor
 from PyQt5 import QtCore, sip, QtGui
 from mongoengine import connect
@@ -39,6 +39,7 @@ class Ico(QWidget):
         self.launch = dbConnector('127.0.0.1', 'Raymond777', 'Ytk981213', 'test')
         #self.launch.walk_path()
         self.setGeometry(325, 140, 800, 600)
+        self.center()
         self.setWindowTitle('FileSearcher')
 
         self.search = QPushButton('Search', self)
@@ -195,57 +196,64 @@ class Ico(QWidget):
                 self.model.setItem(i, 3, value)
 
             #self.tableWidget.setItem(i, 3, QTableWidgetItem(value))  # 设置i行3列的内容为Value
-
-            self.tableView.setModel(self.model)
-            self.index = self.model.index(self.tableView.currentIndex().row(), self.tableView.currentIndex().column())
+            if self.model.item(0, 1) == None:
+                reply = QMessageBox.warning(self, '确认', '没有相关文件，需要再次搜索吗？', QMessageBox.No | QMessageBox.Yes, QMessageBox.Yes)
+                if reply == QMessageBox.Yes:
+                    self.searchLineEdit.setText("")
+                    self.count -= 1
+                else:
+                    self.close()
+            else:
+                self.tableView.setModel(self.model)
+                self.index = self.model.index(self.tableView.currentIndex().row(), self.tableView.currentIndex().column())
             #data = self.model.data(index)
             #self.tableView.clicked.connect(self.getCurrentIndex(self.index))  # 将click信号与getCurrentIndex函数绑定
 
             #self.tableView.setToolTip("test")
 
             # print(self.model.item(row, 1))
-            self.tableView.doubleClicked.connect(self.openDir)
-            self.tableView.clicked.connect(self.toolTip)
+                self.tableView.doubleClicked.connect(self.openDir)
+                self.tableView.clicked.connect(self.toolTip)
             #self.tableView.setToolTip(self.cell_value)
             # temp_widget = self.tableView.indexWidget(list[0], list[1])
             # temp_widget
             #self.tableView.clicked.connect(self.openDir(row))
         # 水平方向标签拓展剩下的窗口部分，填满表格
         #     self.tableView.horizontalHeader().setStretchLastSection(True)
-            self.tableView.horizontalHeader().resizeSection(1, 380)
-            self.tableView.horizontalHeader().resizeSection(0, 160)
+                self.tableView.horizontalHeader().resizeSection(1, 380)
+                self.tableView.horizontalHeader().resizeSection(0, 160)
             #self.tableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-            self.tableView.horizontalHeader().setSectionResizeMode(0, QHeaderView.Interactive)
+                self.tableView.horizontalHeader().setSectionResizeMode(0, QHeaderView.Interactive)
             #self.tableView.horizontalHeader().setSectionResizeMode(1, QHeaderView.Interactive)
-            self.tableView.horizontalHeader().setSectionResizeMode(2, QHeaderView.Interactive)
-            self.tableView.horizontalHeader().setSectionResizeMode(3, QHeaderView.Interactive)
-            self.tableView.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
+                self.tableView.horizontalHeader().setSectionResizeMode(2, QHeaderView.Interactive)
+                self.tableView.horizontalHeader().setSectionResizeMode(3, QHeaderView.Interactive)
+                self.tableView.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
             #self.tableView.horizontalHeader().setSectionResizeMode(2, QHeaderView.Interactive)
             #self.tableView.horizontalHeader().setSectionResizeMode(3, QHeaderView.Interactive)
         # 水平方向，表格大小拓展到适当的尺寸
             #self.tableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         # 设置只有行选中, 整行选中
-            self.tableView.setSelectionBehavior(QAbstractItemView.SelectRows)
+                self.tableView.setSelectionBehavior(QAbstractItemView.SelectRows)
         #self.tableView.resizeColumnsToContents()  # 设置列宽高按照内容自适应
         #self.tableView.resizeRowsToContents()  # 设置行宽和高按照内容自适应
+                self.tableView.item
+                self.result.addWidget(self.tableView)
 
-            self.result.addWidget(self.tableView)
+                self.showLabel = QLabel("Result")
+                self.showLine = QLineEdit(self)
+                self.showLine.setReadOnly(True)
+                self.showLine.setPlaceholderText(" Here is the clicked result.")
+                self.showLine.setMinimumSize(650, 25)
 
-            self.showLabel = QLabel("Result")
-            self.showLine = QLineEdit(self)
-            self.showLine.setReadOnly(True)
-            self.showLine.setPlaceholderText(" Here is the clicked result.")
-            self.showLine.setMinimumSize(650, 25)
-
-            hbox_show = QHBoxLayout()
+                hbox_show = QHBoxLayout()
             # addStretch函数的作用是在布局器中增加一个伸缩量，里面的参数表示QSpacerItem的个数，默认值为零，会将你放在layout中的空间压缩成默认的大小。
-            hbox_show.addStretch(2)
-            hbox_show.addWidget(self.showLabel)
-            hbox_show.addStretch(1)
-            hbox_show.addWidget(self.showLine)
-            hbox_show.addStretch(2)
+                hbox_show.addStretch(2)
+                hbox_show.addWidget(self.showLabel)
+                hbox_show.addStretch(1)
+                hbox_show.addWidget(self.showLine)
+                hbox_show.addStretch(2)
 
-            self.result.addLayout(hbox_show)
+                self.result.addLayout(hbox_show)
 
         # for i in range(self.num):
         #     temp_info = temp_list[i]
@@ -331,6 +339,12 @@ class Ico(QWidget):
         # list.append(column)
         # list.append(cell_value)
         # return list
+
+    def center(self):
+        qr = self.frameGeometry()
+        cp = QDesktopWidget().availableGeometry().center()
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())
 
     def closeEvent(self, event):
         #QMessageBox.question, critical, warining, information 代表四个不同的图标
