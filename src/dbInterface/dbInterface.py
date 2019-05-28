@@ -1,13 +1,13 @@
-from PyQt5.QtCore import QPoint, QModelIndex, QVariant
 import os
-from PyQt5.QtWidgets import QWidget, QPushButton, QMessageBox, QLineEdit, QHBoxLayout, QVBoxLayout, \
-    QFormLayout, QLabel, QTableView, QHeaderView, QAbstractItemView, QToolTip, QDesktopWidget
+import json
+from PyQt5.QtWidgets import * 
+from src.dbConnector.dbConnector import *
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QCursor
+from PyQt5.QtCore import QPoint, QModelIndex, QVariant
 from PyQt5 import QtCore, sip, QtGui
 from mongoengine import connect
 from global_var import SYSTEM_TYPE
 
-from src.dbConnector.dbConnector import *
 
 # #如果写了这句话并将执行的语句放到这个判断语句的后面，那么只有在程序本身被执行的时候才能运行这个判断语句下面的语句。否则程序被作为模块导入的时候就会执行。
 # if __name__ == '__main__':
@@ -35,9 +35,12 @@ class Ico(QWidget):
         self.initUI()
 
     def initUI(self):
+        self.__read_config()
 
-        self.launch = dbConnector('127.0.0.1', 'Raymond777', 'Ytk981213', 'test')
-        #self.launch.walk_path()
+        self.launch = dbConnector(self.__data['db_host_name'], self.__data['db_usr_name'], self.__data['db_usr_pwd'], self.__data['db_schema'])
+        if self.__data['Re_walk']:
+            self.launch.init_database()
+            self.launch.walk_path()
         self.setGeometry(325, 140, 800, 600)
         self.center()
         self.setWindowTitle('FileSearcher')
@@ -359,3 +362,10 @@ class Ico(QWidget):
             event.accept()
         else:
             event.ignore()
+
+    def __read_config(self):
+        config_dir = './bin/config.json'
+        with open(config_dir, encoding='utf8') as f:
+            self.__data = json.load(f)
+        SYSTEM_TYPE = self.__data['System_type']
+        

@@ -42,10 +42,14 @@ class dbConnector:
         #self.__init_database()
 
     def walk_path(self):
-        if SYSTEM_TYPE == "Windows":
-            self.__windows_walk_path()
-        elif SYSTEM_TYPE == "MacOS":
-            self.__macOS_walk_path()
+        try:
+            if SYSTEM_TYPE == "Windows":
+                self.__windows_walk_path()
+            elif SYSTEM_TYPE == "MacOS":
+                self.__macOS_walk_path()
+            self.__db.commit()
+        except:
+            self.__db_obj.rollback()
 
     'Destructor, to close the connection and commit all'
     def __del__(self):
@@ -102,6 +106,7 @@ class dbConnector:
         for char in char_list:
             if os.path.isdir(char + ':\\'):
                 disk_list.append(char)
+        count = 0
         #self.__disk = disk_list
         for disk in disk_list:
             g = os.walk(disk + ':\\')
@@ -112,13 +117,16 @@ class dbConnector:
             f = FileInfo(disk + ':', True, 'null', hash_id, size='0KB')
             self.insert_file_obj(f, hash_id, True)
             for path, dir_list, file_list in g:
+                if count % 1000 == 0:
+                    print(count)
                 for dir_name in dir_list:
+                    count += 1
                     full_path = os.path.join(path, dir_name)
                     statinfo = os.stat(full_path)
                     local = time.localtime(statinfo.st_ctime)
                     modify_time = str(local.tm_year) + '-' + str(local.tm_mon) + '-' + str(local.tm_mday) + ' ' + str(local.tm_hour) + ':' + str(local.tm_min) + ':' + str(local.tm_sec)
 
-                    size = str(statinfo.st_size / 1024) + 'KB'
+                    size = str(round((statinfo.st_size / 1024), 2)) + 'KB'
                     h = hashlib.md5()
                     h.update(full_path.encode('utf8'))
                     hash_id = h.hexdigest()
@@ -129,12 +137,13 @@ class dbConnector:
                     self.insert_file_obj(f, pre_folder_id, True)
 
                 for file_name in file_list:
+                    count += 1
                     full_path = os.path.join(path, file_name)
                     statinfo = os.stat(full_path)
                     local = time.localtime(statinfo.st_ctime)
                     modify_time = str(local.tm_year) + '-' + str(local.tm_mon) + '-' + str(local.tm_mday) + ' ' + str(local.tm_hour) + ':' + str(local.tm_min) + ':' + str(local.tm_sec)
 
-                    size = str(statinfo.st_size / 1024) + 'KB'
+                    size = str(round((statinfo.st_size / 1024), 2)) + 'KB'
                     h = hashlib.md5()
                     h.update(full_path.encode('utf8'))
                     hash_id = h.hexdigest()
@@ -159,7 +168,7 @@ class dbConnector:
                     local = time.localtime(statinfo.st_ctime)
                     modify_time = str(local.tm_year) + '-' + str(local.tm_mon) + '-' + str(local.tm_mday) + ' ' + str(local.tm_hour) + ':' + str(local.tm_min) + ':' + str(local.tm_sec)
 
-                    size = str(statinfo.st_size / 1024) + 'KB'
+                    size = str(round((statinfo.st_size / 1024), 2)) + 'KB'
                     h = hashlib.md5()
                     h.update(full_path.encode('utf8'))
                     hash_id = h.hexdigest()
@@ -178,7 +187,7 @@ class dbConnector:
                     local = time.localtime(statinfo.st_ctime)
                     modify_time = str(local.tm_year) + '-' + str(local.tm_mon) + '-' + str(local.tm_mday) + ' ' + str(local.tm_hour) + ':' + str(local.tm_min) + ':' + str(local.tm_sec)
 
-                    size = str(statinfo.st_size / 1024) + 'KB'
+                    size = str(round((statinfo.st_size / 1024), 2)) + 'KB'
                     h = hashlib.md5()
                     h.update(full_path.encode('utf8'))
                     hash_id = h.hexdigest()
@@ -236,15 +245,9 @@ class dbConnector:
 
         value_list = ["'{}'".format(hash_id), "\"{}\"".format(name.replace('"', '\\"')), "'{}'".format(str(modify_time)), "'{}'".format(size), str(isFolder), "'{}'".format(pre_folder_id)]
 
-        try:
-            self.__insert_info('file_info', value_list)
-            self.__db_obj.commit()
-        except Exception as e:
-            self.__db_obj.rollback()
-            print(name)
-            raise Exception(e)
+        self.__insert_info('file_info', value_list)
 
-    def __init_database(self):
+    def init_database(self):
         self.__db_cursor.execute('drop table if exists file_info')
         create_database = "create table file_info ( hash_id varchar(100) primary key, name varchar(300) not null, modify_time varchar(30) not null, size varchar(20), isFolder bool, pre_folder_id varchar(100), constraint foreign key (pre_folder_id) references file_info(hash_id));"
         self.__db_cursor.execute(create_database)
