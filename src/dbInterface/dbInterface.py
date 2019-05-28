@@ -6,8 +6,6 @@ from PyQt5.QtGui import QStandardItemModel, QStandardItem, QCursor
 from PyQt5.QtCore import QPoint, QModelIndex, QVariant
 from PyQt5 import QtCore, sip, QtGui
 from mongoengine import connect
-from global_var import SYSTEM_TYPE
-
 
 # #如果写了这句话并将执行的语句放到这个判断语句的后面，那么只有在程序本身被执行的时候才能运行这个判断语句下面的语句。否则程序被作为模块导入的时候就会执行。
 # if __name__ == '__main__':
@@ -38,6 +36,7 @@ class Ico(QWidget):
         self.__read_config()
 
         self.launch = dbConnector(self.__data['db_host_name'], self.__data['db_usr_name'], self.__data['db_usr_pwd'], self.__data['db_schema'])
+        temp = self.__data['Re_walk']
         if self.__data['Re_walk']:
             self.launch.init_database()
             self.launch.walk_path()
@@ -318,9 +317,9 @@ class Ico(QWidget):
         index = signal.sibling(row, 1)
         index_dict = self.model.itemData(index)
         path = index_dict.get(0)
-        if SYSTEM_TYPE == 'MacOS':
+        if self.__data['System_type'] == 'MacOS':
             os.system("open \"{}{}".format(path, '\"'))
-        elif SYSTEM_TYPE == 'Windows':
+        elif self.__data['System_type'] == 'Windows':
             os.system("explorer \"{}{}".format(path, '\"'))
         # print(
         #     'Row {}, Column {} clicked - value: {}\nColumn 1 contents: {}'.format(row, column, cell_value, index_value))
@@ -367,5 +366,3 @@ class Ico(QWidget):
         config_dir = './bin/config.json'
         with open(config_dir, encoding='utf8') as f:
             self.__data = json.load(f)
-        SYSTEM_TYPE = self.__data['System_type']
-        

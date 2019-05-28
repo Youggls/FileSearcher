@@ -2,8 +2,8 @@ import pymysql
 import hashlib
 import time
 import os
+import json
 from src.dbConnector.FileInfo import FileInfo
-from global_var import SYSTEM_TYPE
 
 class dbConnector:
     'The class is used to establish connection between the database and the appliction'
@@ -26,13 +26,14 @@ class dbConnector:
             raise RuntimeError('The db_pwd must be a string type!')
         if type(default_schema) != str:
             raise RuntimeError('The defalut_schema must be a string type!')
+        self.__read_config()
 
         self.__db_obj = pymysql.connect(host_name, db_usr, db_pwd, default_schema)
         self.__db_cursor = self.__db_obj.cursor()
         self.__host_name = host_name
         self.__db_usr_name = db_usr
         self.__db_pwd = db_pwd
-        if SYSTEM_TYPE == 'Windows':
+        if self.__data['System_type'] == 'Windows':
             disk_list = []
             char_list = [chr(i) for i in range(65, 91)]
             for char in char_list:
@@ -43,11 +44,13 @@ class dbConnector:
 
     def walk_path(self):
         try:
-            if SYSTEM_TYPE == "Windows":
+            if self.__data['System_type'] == 'Windows':
                 self.__windows_walk_path()
-            elif SYSTEM_TYPE == "MacOS":
+            elif self.__data['System_type'] == 'MacOS':
                 self.__macOS_walk_path()
-            self.__db.commit()
+            print('{}/mysql\" -h {} -u {} -p{} {} <./bin/temp.sql'.format(self.__data['Mysql_bin_path'], self.__data['db_host_name'], self.__db_usr_name, self.__db_pwd, self.__data['db_schema']))
+            os.system('{}/mysql\" -h {} -u {} -p{} {} <./bin/temp.sql'.format(self.__data['Mysql_bin_path'], self.__data['db_host_name'], self.__db_usr_name, self.__db_pwd, self.__data['db_schema']))
+            os.remove('./bin/temp.sql')
         except:
             self.__db_obj.rollback()
 
@@ -84,11 +87,11 @@ class dbConnector:
 
         fullPath = ''
         for name in reversed(name_list):
-            if SYSTEM_TYPE == "MacOS":
+            if self.__data['System_type'] == "MacOS":
                 fullPath += name
                 if name != '/':
                     fullPath += '/'
-            elif SYSTEM_TYPE == "Windows":
+            elif self.__data['System_type'] == "Windows":
                 fullPath += name
                 if name not in self.__disk:
                     fullPath += '\\'
@@ -119,6 +122,8 @@ class dbConnector:
             for path, dir_list, file_list in g:
                 if count % 1000 == 0:
                     print(count)
+                if count >= 10000:
+                    return
                 for dir_name in dir_list:
                     count += 1
                     full_path = os.path.join(path, dir_name)
@@ -243,7 +248,10 @@ class dbConnector:
             if index != len(value_list) - 1:
                 sql += ','
         sql += ')'
-        self.__db_cursor.execute(sql)
+        f = open('./bin/temp.sql', 'a')
+        f.write(sql + ';' + '\n')
+        f.close()
+        #self.__db_cursor.execute(sql)
 
     'insert single_file into database, info includes the name, modify_time, size, isFolder'
     def __insert_single_file(self, hash_id, name, modify_time, size, pre_folder_id, isFolder=True):
@@ -260,3 +268,8 @@ class dbConnector:
         self.__db_cursor.execute('drop table if exists file_info')
         create_database = "create table file_info ( hash_id varchar(100) primary key, name varchar(300) not null, modify_time varchar(30) not null, size varchar(20), isFolder bool, pre_folder_id varchar(100), constraint foreign key (pre_folder_id) references file_info(hash_id));"
         self.__db_cursor.execute(create_database)
+
+    def __read_config(self):
+        config_dir = './bin/config.json'
+        with open(config_dir, encoding='utf8') as f:
+            self.__data = json.load(f)
