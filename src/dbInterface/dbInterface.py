@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import QWidget, QPushButton, QMessageBox, QLineEdit, QHBoxL
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QCursor
 from PyQt5 import QtCore, sip, QtGui
 from mongoengine import connect
+from global_var import SYSTEM_TYPE
 
 from src.dbConnector.dbConnector import *
 
@@ -286,7 +287,10 @@ class Ico(QWidget):
         index = signal.sibling(row, 1)
         index_dict = self.model.itemData(index)
         path = index_dict.get(0)
-        os.system('open ' + path)
+        if SYSTEM_TYPE == 'MacOS':
+            os.system('open ' + path)
+        elif SYSTEM_TYPE == 'Windows':
+            os.system('explorer ' + path)
         # print(
         #     'Row {}, Column {} clicked - value: {}\nColumn 1 contents: {}'.format(row, column, cell_value, index_value))
 
