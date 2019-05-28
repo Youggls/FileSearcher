@@ -38,7 +38,7 @@ class Ico(QWidget):
 
         self.launch = dbConnector('127.0.0.1', 'Raymond777', 'Ytk981213', 'test')
         #self.launch.walk_path()
-        self.setGeometry(300, 300, 600, 440)
+        self.setGeometry(325, 140, 800, 600)
         self.setWindowTitle('FileSearcher')
 
         self.search = QPushButton('Search', self)
@@ -58,7 +58,7 @@ class Ico(QWidget):
         self.searchLineEdit.setFocus()
         self.searchLineEdit.setPlaceholderText(" Enter the file's name here.")
         self.searchLineEdit.setClearButtonEnabled(True)
-        self.searchLineEdit.setMinimumSize(180, 25)
+        self.searchLineEdit.setMinimumSize(300, 25)
         self.searchLineEdit.returnPressed.connect(lambda:self.showResult(self.searchLineEdit.text()))
         self.count = -1
 
@@ -123,6 +123,10 @@ class Ico(QWidget):
             if self.count != 0:
                 self.result.removeWidget(self.tableView)
                 sip.delete(self.tableView)
+                self.result.removeWidget(self.showLine)
+                sip.delete(self.showLine)
+                self.result.removeWidget(self.showLabel)
+                sip.delete(self.showLabel)
             self.resultLabel = QLabel("Result")
         # self.resultView = QListView()  # 创建ListView
         # self.resultModel = QStringListModel()  # 创建ListModel
@@ -207,9 +211,16 @@ class Ico(QWidget):
             # temp_widget
             #self.tableView.clicked.connect(self.openDir(row))
         # 水平方向标签拓展剩下的窗口部分，填满表格
-        #self.tableView.horizontalHeader().setStretchLastSection(True)
-        # 水平方向，表格大小拓展到适当的尺寸
+        #     self.tableView.horizontalHeader().setStretchLastSection(True)
+            self.tableView.horizontalHeader().resizeSection(1, 380)
+            self.tableView.horizontalHeader().resizeSection(0, 170)
             self.tableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+            self.tableView.horizontalHeader().setSectionResizeMode(0, QHeaderView.Interactive)
+            self.tableView.horizontalHeader().setSectionResizeMode(1, QHeaderView.Interactive)
+            #self.tableView.horizontalHeader().setSectionResizeMode(2, QHeaderView.Interactive)
+            #self.tableView.horizontalHeader().setSectionResizeMode(3, QHeaderView.Interactive)
+        # 水平方向，表格大小拓展到适当的尺寸
+            #self.tableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         # 设置只有行选中, 整行选中
             self.tableView.setSelectionBehavior(QAbstractItemView.SelectRows)
         #self.tableView.resizeColumnsToContents()  # 设置列宽高按照内容自适应
@@ -221,7 +232,7 @@ class Ico(QWidget):
             self.showLine = QLineEdit(self)
             self.showLine.setReadOnly(True)
             self.showLine.setPlaceholderText(" Here is the clicked result.")
-            self.showLine.setMinimumSize(450, 25)
+            self.showLine.setMinimumSize(650, 25)
 
             hbox_show = QHBoxLayout()
             # addStretch函数的作用是在布局器中增加一个伸缩量，里面的参数表示QSpacerItem的个数，默认值为零，会将你放在layout中的空间压缩成默认的大小。
@@ -288,11 +299,23 @@ class Ico(QWidget):
         index_dict = self.model.itemData(index)
         path = index_dict.get(0)
         if SYSTEM_TYPE == 'MacOS':
-            os.system('open ' + path)
+            os.system("open \"{}{}".format(path, '\"'))
         elif SYSTEM_TYPE == 'Windows':
-            os.system('explorer ' + path)
+            os.system("explorer \"{}{}".format(path, '\"'))
         # print(
         #     'Row {}, Column {} clicked - value: {}\nColumn 1 contents: {}'.format(row, column, cell_value, index_value))
+
+    # def openDir(self, signal):
+    #     row = signal.row()  # RETRIEVES ROW OF CELL THAT WAS DOUBLE CLICKED
+    #     column = signal.column()  # RETRIEVES COLUMN OF CELL THAT WAS DOUBLE CLICKED
+    #     cell_dict = self.model.itemData(signal)  # RETURNS DICT VALUE OF SIGNAL
+    #     cell_value = cell_dict.get(0)  # RETRIEVE VALUE FROM DICT
+    #
+    #     index = signal.sibling(row, 1)
+    #     index_dict = self.model.itemData(index)
+    #     index_value = index_dict.get(0)
+    #     print(
+    #         'Row {}, Column {} clicked - value: {}\nColumn 1 contents: {}'.format(row, column, cell_value, index_value))
 
     def toolTip(self, signal):
         row = signal.row()  # RETRIEVES ROW OF CELL THAT WAS DOUBLE CLICKED
