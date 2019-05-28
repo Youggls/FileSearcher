@@ -234,7 +234,7 @@ class dbConnector:
         if type(pre_folder_id) != str:
             raise RuntimeError('The pre_folder_id must be a string type!')
 
-        value_list = ["'{}'".format(hash_id), "'{}'".format(name), "'{}'".format(str(modify_time)), "'{}'".format(size), str(isFolder), "'{}'".format(pre_folder_id)]
+        value_list = ["'{}'".format(hash_id), "\"{}\"".format(name), "'{}'".format(str(modify_time)), "'{}'".format(size), str(isFolder), "'{}'".format(pre_folder_id)]
 
         try:
             self.__insert_info('file_info', value_list)
