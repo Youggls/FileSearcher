@@ -241,6 +241,7 @@ class dbConnector:
             self.__db_obj.commit()
         except Exception as e:
             self.__db_obj.rollback()
+            print(name)
             raise Exception(e)
 
     def __init_database(self):
