@@ -4,14 +4,15 @@ from PyQt5.QtCore import QPoint, QModelIndex, QVariant
 import os
 from PyQt5.QtWidgets import QWidget, QPushButton, QMessageBox, QLineEdit, QHBoxLayout, QVBoxLayout, \
     QFormLayout, QLabel, QTableView, QHeaderView, QAbstractItemView, QToolTip, QDesktopWidget, QApplication
-from PyQt5.QtGui import QStandardItemModel, QStandardItem, QCursor, QIcon
+from PyQt5.QtGui import QStandardItemModel, QStandardItem, QCursor, QIcon, QPixmap
 import os
 import json
+import images_rc
 from PyQt5.QtWidgets import * 
 from src.dbConnector.dbConnector import *
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QCursor
 from PyQt5.QtCore import QPoint, QModelIndex, QVariant
-from PyQt5 import QtCore, sip, QtGui
+from PyQt5 import QtCore, sip, QtGui, QtWidgets
 from mongoengine import connect
 
 # #如果写了这句话并将执行的语句放到这个判断语句的后面，那么只有在程序本身被执行的时候才能运行这个判断语句下面的语句。否则程序被作为模块导入的时候就会执行。
@@ -53,8 +54,14 @@ class Ico(QWidget):
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)  # 设置窗口背景透明
         #self.setWindowFlag(QtCore.Qt.FramelessWindowHint)  # 隐藏边框
         self.setWindowTitle('FileSearcher')
-        path = os.path.join(os.path.dirname(sys.modules[__name__].__file__), 'dva_testIcon.ico')
-        self.setWindowIcon(QIcon(path))
+
+        self.label = QLabel(self)
+        self.label.setFixedWidth(200)
+        self.label.setFixedHeight(60)
+        self.head = QPixmap('image.png').scaled(self.label.width(), self.label.height())
+        self.label.setPixmap(self.head)
+        #self.label.move(400, 200)
+        # self.setWindowIcon(QIcon(QPixmap(path)))
 
         self.search = QPushButton('Search', self)
         #self.search.setGeometry(115, 150, 70, 30)
@@ -133,8 +140,14 @@ class Ico(QWidget):
         self.hbox_search.addStretch(1)  # 增加伸缩量
 
         self.result = QVBoxLayout()
-        #self.result.addStretch(1)
+        self.test = QHBoxLayout()
+        self.test.addWidget(self.label)
+        self.T = QVBoxLayout()
+
         self.result.addLayout(self.hbox_search)
+        self.T.addLayout(self.test)
+        self.T.setSpacing(10)
+        self.T.addLayout(self.result)
         #self.result.addStretch(6)  # 增加伸缩量
         # self.result.addWidget(self.tableView)
         #self.setLayout(self.result)
@@ -153,14 +166,19 @@ class Ico(QWidget):
         # vbox.addLayout(hbox_click)
 
         #设置窗口的主要布局
-        self.setLayout(self.result)
+        self.setLayout(self.T)
         self.show()
     def openDir(self, row):
         print(self.model.item(row, 1))
 
     def showResult(self, file_name):
+        # if self.test:
+        #     self.result.removeWidget(self.test)
+        #     sip.delete(self.test)
         if file_name !="":
-
+            #self.setLayout(self.result)
+            QApplication.processEvents()
+            #self.show()
         # self.resultView = QListView()  # 创建ListView
         # self.resultModel = QStringListModel()  # 创建ListModel
         # temp_list = self.launch.search_file(file_name)
