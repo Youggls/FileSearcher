@@ -1,3 +1,5 @@
+import sys
+
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import * 
 from src.dbConnector.dbConnector import *
@@ -429,3 +431,7 @@ class Ico(QWidget):
         config_dir = './bin/config.json'
         with open(config_dir, encoding='utf8') as f:
             self.__data = json.load(f)
+        # base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+        # config_dir = os.path.join(base_path, config_dir)
+        # with open(config_dir, encoding='utf8') as f:
+        #     self.__data = json.load(f)

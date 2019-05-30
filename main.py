@@ -1,3 +1,5 @@
+import sys
+
 from src.dbInterface.dbInterface import *
 
 if __name__ == '__main__':
