@@ -1,7 +1,3 @@
-import sys
-from PyQt5.QtWidgets import QApplication
-from PyQt5.QtGui import QIcon, QPixmap
-from src.dbConnector.dbConnector import *
 from src.dbInterface.dbInterface import *
 
 if __name__ == '__main__':

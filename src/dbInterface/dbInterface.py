@@ -1,19 +1,8 @@
-import sys
-
-from PyQt5.QtCore import QPoint, QModelIndex, QVariant
-import os
-from PyQt5.QtWidgets import QWidget, QPushButton, QMessageBox, QLineEdit, QHBoxLayout, QVBoxLayout, \
-    QFormLayout, QLabel, QTableView, QHeaderView, QAbstractItemView, QToolTip, QDesktopWidget, QApplication
-from PyQt5.QtGui import QStandardItemModel, QStandardItem, QCursor, QIcon, QPixmap
-import os
-import json
-import images_rc
+from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import * 
 from src.dbConnector.dbConnector import *
-from PyQt5.QtGui import QStandardItemModel, QStandardItem, QCursor
-from PyQt5.QtCore import QPoint, QModelIndex, QVariant
-from PyQt5 import QtCore, sip, QtGui, QtWidgets
-from mongoengine import connect
+from PyQt5.QtGui import QStandardItemModel, QStandardItem
+from PyQt5 import QtCore, sip, QtGui
 
 # #如果写了这句话并将执行的语句放到这个判断语句的后面，那么只有在程序本身被执行的时候才能运行这个判断语句下面的语句。否则程序被作为模块导入的时候就会执行。
 # if __name__ == '__main__':
