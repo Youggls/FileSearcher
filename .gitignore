@@ -15,3 +15,5 @@ build
 .idea
 *.DS_Store
 localtest.py
+*.rar
+*.spec
