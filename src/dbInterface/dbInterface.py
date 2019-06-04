@@ -41,7 +41,7 @@ class Ico(QWidget):
             self.launch.walk_path()
         self.setGeometry(325, 140, 800, 600)
         self.center()
-        self.setWindowOpacity(0.95)  # 设置窗口透明度
+        self.setWindowOpacity(0.98)  # 设置窗口透明度
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)  # 设置窗口背景透明
         #self.setWindowFlag(QtCore.Qt.FramelessWindowHint)  # 隐藏边框
         self.setWindowTitle('FileSearcher')
