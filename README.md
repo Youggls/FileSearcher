@@ -2,7 +2,7 @@
 
 ## 一、软件使用方法：
 
-1. 请下载我们提供的[release版本](https://github.com/Youggls/Fileseacher)
+1. 请下载我们提供的[release版本](https://github.com/Youggls/Filesearcher)
 
 2. 在本地计算机安装`MySQL Server`
 
